@@ -1,0 +1,1917 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Central Financeira</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://unpkg.com/@phosphor-icons/web@2.1.1"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --primary:#c5a059;--primary-l:#dfc18a;--primary-d:#9a7a36;
+  --bg-deep:#020407;--bg-panel:#06090f;--bg-card:rgba(12,18,32,0.7);
+  --surface:rgba(16,24,40,0.55);--surface-hv:rgba(24,36,60,0.9);
+  --border:rgba(197,160,89,0.13);--border-hv:rgba(197,160,89,0.36);
+  --txt:#eff3fb;--txt-m:#58718e;--txt-s:#8aa2be;
+  --ok:#0fb980;--err:#e8404a;--warn:#f09509;--info:#3a82f5;
+  --r:12px;--rsm:8px;--rxs:5px;
+  --ease:all 0.26s cubic-bezier(.4,0,.2,1);
+  --serif:'Cormorant Garamond',Georgia,serif;
+  --sans:'Inter',system-ui,sans-serif;
+  --sw:264px;--th:66px;
+}
+body{font-family:var(--sans);background:var(--bg-deep);color:var(--txt);display:flex;min-height:100vh;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 90% 60% at 50% -5%,rgba(10,17,34,.9) 0%,transparent 65%);pointer-events:none;z-index:0}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:var(--primary)}
+
+/* ── SIDEBAR ── */
+.sidebar{width:var(--sw);background:rgba(3,5,10,.97);backdrop-filter:blur(24px);border-right:1px solid var(--border);position:fixed;height:100vh;z-index:100;display:flex;flex-direction:column;transition:transform .3s ease}
+.brand{padding:24px 20px 18px;border-bottom:1px solid var(--border);flex-shrink:0}
+.brand-row{display:flex;align-items:center;gap:9px}
+.brand-name{font-family:var(--serif);font-size:1.65rem;font-weight:600;letter-spacing:.5px}
+.brand-gem{width:8px;height:8px;border-radius:50%;background:var(--primary);flex-shrink:0;box-shadow:0 0 8px rgba(197,160,89,.5)}
+.brand-tag{font-size:.62rem;text-transform:uppercase;letter-spacing:2.5px;color:var(--txt-m);margin-top:2px;font-weight:500}
+.nav-menu{padding:12px 9px;flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:1px}
+.nav-sec{font-size:.58rem;text-transform:uppercase;letter-spacing:2.2px;color:var(--txt-m);padding:10px 12px 3px;font-weight:600;opacity:.65}
+.nav-item{padding:9px 13px;border-radius:var(--rsm);color:var(--txt-m);cursor:pointer;display:flex;align-items:center;gap:10px;transition:var(--ease);font-size:.84rem;font-weight:500;border:1px solid transparent;position:relative}
+.nav-item i{font-size:1rem;flex-shrink:0}
+.nav-item:hover{color:var(--txt-s);background:rgba(255,255,255,.022)}
+.nav-item.active{background:rgba(197,160,89,.09);color:var(--primary);border-color:rgba(197,160,89,.17)}
+.nav-badge{margin-left:auto;background:var(--err);color:#fff;font-size:.58rem;font-weight:700;border-radius:10px;padding:2px 6px;min-width:18px;text-align:center}
+.sidebar-foot{padding:12px 16px;border-top:1px solid var(--border);flex-shrink:0}
+.sync-row{display:flex;align-items:center;gap:7px;font-size:.7rem;color:var(--txt-m)}
+.sync-dot{width:6px;height:6px;border-radius:50%;background:var(--txt-m);flex-shrink:0;transition:background .3s}
+.sync-dot.ok{background:var(--ok)}.sync-dot.err{background:var(--err)}.sync-dot.warn{background:var(--warn)}
+
+/* ── MAIN ── */
+.main-wrap{flex:1;margin-left:var(--sw);display:flex;flex-direction:column;min-height:100vh;position:relative;z-index:1}
+.topbar{height:var(--th);display:flex;justify-content:space-between;align-items:center;padding:0 26px;background:rgba(3,5,10,.78);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:50;flex-shrink:0}
+.pg-title{font-family:var(--serif);font-size:1.4rem;color:var(--primary);font-weight:400}
+.top-r{display:flex;gap:7px;align-items:center}
+.top-date{font-size:.76rem;color:var(--txt-m);padding-right:12px;border-right:1px solid var(--border);white-space:nowrap}
+
+/* ── BUTTONS ── */
+.btn{padding:7px 15px;border-radius:var(--rsm);font-weight:600;font-size:.76rem;text-transform:uppercase;letter-spacing:.8px;cursor:pointer;transition:var(--ease);border:1px solid transparent;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.btn i{font-size:.95rem}
+.btn-p{background:var(--primary);color:var(--bg-deep)}
+.btn-p:hover{background:var(--primary-l);transform:translateY(-1px);box-shadow:0 4px 16px rgba(197,160,89,.28)}
+.btn-o{background:transparent;border-color:var(--border);color:var(--primary)}
+.btn-o:hover{border-color:var(--primary);background:rgba(197,160,89,.06)}
+.btn-g{background:transparent;border:none;color:var(--txt-m)}
+.btn-g:hover{color:var(--txt);background:rgba(255,255,255,.04)}
+.btn-d{background:rgba(232,65,74,.12);border-color:rgba(232,65,74,.28);color:var(--err)}
+.btn-d:hover{background:rgba(232,65,74,.22)}
+.btn-sm{padding:5px 11px;font-size:.7rem}
+.btn-xs{padding:3px 8px;font-size:.66rem}
+.btn-ic{background:transparent;border:1px solid var(--border);color:var(--txt-m);cursor:pointer;padding:6px;border-radius:var(--rsm);transition:var(--ease);display:inline-flex;align-items:center;justify-content:center}
+.btn-ic:hover{background:var(--surface-hv);color:var(--primary);border-color:var(--primary)}
+.btn-ic.d:hover{background:rgba(232,65,74,.1);color:var(--err);border-color:var(--err)}
+.btn-ic i{font-size:.9rem}
+
+/* ── CONTENT ── */
+.content{padding:22px 26px;flex:1}
+.tab{display:none;animation:fUp .3s ease-out}.tab.active{display:block}
+@keyframes fUp{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── GRIDS ── */
+.grid-kpi{display:grid;grid-template-columns:repeat(auto-fit,minmax(192px,1fr));gap:14px;margin-bottom:18px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px}
+.g3{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}
+.g-charts{display:grid;grid-template-columns:3fr 2fr;gap:18px;margin-bottom:18px}
+.mb18{margin-bottom:18px}
+
+/* ── CARD ── */
+.card{background:var(--bg-card);backdrop-filter:blur(14px);border:1px solid var(--border);border-radius:var(--r);padding:20px;transition:var(--ease)}
+.card:hover{border-color:var(--border-hv)}
+.card-hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.c-title{font-size:.68rem;text-transform:uppercase;letter-spacing:1.6px;color:var(--primary);font-weight:600;display:flex;align-items:center;gap:7px}
+
+/* ── KPI ── */
+.kpi{background:var(--bg-card);backdrop-filter:blur(14px);border:1px solid var(--border);border-radius:var(--r);padding:16px 18px;position:relative;overflow:hidden;transition:var(--ease)}
+.kpi::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--primary),transparent);opacity:.6}
+.kpi:hover{border-color:var(--border-hv);transform:translateY(-2px);box-shadow:0 6px 18px rgba(0,0,0,.32)}
+.kpi-lbl{font-size:.64rem;text-transform:uppercase;letter-spacing:1.8px;color:var(--txt-m);display:flex;justify-content:space-between;align-items:center}
+.kpi-lbl i{font-size:.95rem;opacity:.55}
+.kpi-val{font-size:1.55rem;font-weight:300;margin-top:7px;letter-spacing:-.5px;line-height:1.1}
+.kpi-delta{display:flex;align-items:center;gap:3px;font-size:.68rem;font-weight:600;margin-top:5px}
+.kpi-delta.up{color:var(--ok)}.kpi-delta.dn{color:var(--err)}.kpi-delta.nt{color:var(--txt-m)}
+
+/* ── ITEM CARD ── */
+.icard{background:linear-gradient(145deg,rgba(12,18,32,.7),rgba(5,8,15,.96));border:1px solid var(--border);border-radius:var(--r);padding:18px;position:relative;transition:var(--ease)}
+.icard:hover{transform:translateY(-3px);border-color:rgba(197,160,89,.34);box-shadow:0 10px 26px rgba(0,0,0,.38)}
+.icard-ico{width:36px;height:36px;border-radius:8px;background:rgba(197,160,89,.1);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.icard-ico i{font-size:1.15rem;color:var(--primary)}
+.icard h3{font-family:var(--serif);font-size:1.05rem;font-weight:600;margin:0}
+.icard-actions{position:absolute;top:12px;right:12px;display:flex;gap:5px}
+
+/* ── TABLES ── */
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:.83rem}
+th{color:var(--txt-m);font-weight:600;font-size:.64rem;text-transform:uppercase;letter-spacing:1.2px;background:rgba(3,5,10,.55);padding:11px 15px;text-align:left;border-bottom:1px solid var(--border);white-space:nowrap}
+td{padding:12px 15px;border-bottom:1px solid rgba(255,255,255,.025);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:rgba(255,255,255,.01)}
+.td-r{text-align:right}.t-empty{text-align:center;padding:44px 20px!important;color:var(--txt-m);font-size:.86rem}
+
+/* ── BADGES ── */
+.badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:.63rem;font-weight:700;text-transform:uppercase;letter-spacing:.6px;white-space:nowrap}
+.b-ok{background:rgba(15,185,128,.1);color:var(--ok);border:1px solid rgba(15,185,128,.22)}
+.b-err{background:rgba(232,65,74,.1);color:var(--err);border:1px solid rgba(232,65,74,.22)}
+.b-gray{background:rgba(255,255,255,.04);color:var(--txt-s);border:1px solid var(--border)}
+.b-warn{background:rgba(240,149,9,.1);color:var(--warn);border:1px solid rgba(240,149,9,.22)}
+.b-info{background:rgba(58,130,245,.1);color:var(--info);border:1px solid rgba(58,130,245,.22)}
+.b-gold{background:rgba(197,160,89,.1);color:var(--primary);border:1px solid rgba(197,160,89,.22)}
+
+/* ── FORMS ── */
+.fc{width:100%;padding:8px 12px;background:rgba(3,5,10,.88);border:1px solid var(--border);border-radius:var(--rsm);color:var(--txt);font-size:.84rem;font-family:var(--sans);transition:var(--ease)}
+.fc:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(197,160,89,.09)}
+.fc option{background:#06090f;color:var(--txt)}
+.fg{margin-bottom:14px}
+.fg label{display:block;margin-bottom:5px;font-size:.64rem;text-transform:uppercase;color:var(--txt-m);letter-spacing:1.2px;font-weight:600}
+.fr{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+.fr3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:11px}
+.fhint{font-size:.68rem;color:var(--txt-m);margin-top:3px;font-style:italic}
+
+/* ── PROGRESS ── */
+.pb{height:4px;background:rgba(255,255,255,.055);border-radius:2px;overflow:hidden;margin-top:6px}
+.pb-f{height:100%;border-radius:2px;transition:width .55s ease;background:var(--primary)}
+.pb-f.ok{background:var(--ok)}.pb-f.warn{background:var(--warn)}.pb-f.err{background:var(--danger)}
+.cc-bg{height:4px;background:rgba(255,255,255,.055);border-radius:2px;margin:9px 0;overflow:hidden}
+.cc-f{height:100%;border-radius:2px;background:var(--primary);transition:width .5s}
+.cc-f.warn{background:var(--warn)}.cc-f.err{background:var(--err)}
+
+/* ── FILTER BAR ── */
+.fbar{display:flex;gap:7px;align-items:center;flex-wrap:wrap;padding:12px 16px;background:rgba(3,5,10,.45);border-bottom:1px solid var(--border)}
+.fsrch{position:relative;flex:1;min-width:175px}
+.fsrch i{position:absolute;left:9px;top:50%;transform:translateY(-50%);color:var(--txt-m);font-size:.9rem;pointer-events:none}
+.fsrch .fc{padding-left:30px}
+.fbar .fc{width:auto;padding:6px 10px;font-size:.78rem}
+
+/* ── PAGINATION ── */
+.pag{display:flex;align-items:center;justify-content:center;gap:4px;padding:12px}
+.pgb{padding:4px 10px;background:transparent;border:1px solid var(--border);border-radius:var(--rxs);color:var(--txt-m);cursor:pointer;font-size:.76rem;transition:var(--ease);font-family:var(--sans)}
+.pgb:hover{border-color:var(--primary);color:var(--primary)}
+.pgb.act{background:rgba(197,160,89,.12);border-color:var(--primary);color:var(--primary);font-weight:600}
+.pgb:disabled{opacity:.3;cursor:not-allowed;pointer-events:none}
+.pg-info{font-size:.72rem;color:var(--txt-m);padding:0 5px}
+
+/* ── MODALS ── */
+.overlay{display:none;position:fixed;inset:0;background:rgba(2,4,7,.9);backdrop-filter:blur(7px);z-index:200;align-items:center;justify-content:center;padding:14px}
+.overlay.active{display:flex}
+.modal{background:var(--bg-panel);border:1px solid var(--border);border-radius:var(--r);width:100%;max-width:530px;max-height:92vh;display:flex;flex-direction:column;animation:mIn .2s cubic-bezier(.34,1.56,.64,1);overflow:hidden}
+.modal-w{max-width:660px}.modal-sm{max-width:410px}
+@keyframes mIn{from{opacity:0;transform:scale(.94) translateY(7px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.mhd{display:flex;justify-content:space-between;align-items:center;padding:16px 20px;border-bottom:1px solid var(--border);flex-shrink:0}
+.mhd h3{font-family:var(--serif);font-size:1.2rem;font-weight:600;color:var(--primary)}
+.mclose{background:none;border:none;color:var(--txt-m);cursor:pointer;padding:3px;border-radius:4px;transition:var(--ease);display:flex;align-items:center;font-size:.95rem}
+.mclose:hover{color:var(--txt);background:rgba(255,255,255,.05)}
+.mbd{padding:20px;overflow-y:auto}
+.mft{padding:13px 20px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:7px;flex-shrink:0}
+
+/* ── TOASTS ── */
+.tc{position:fixed;top:16px;right:16px;z-index:500;display:flex;flex-direction:column;gap:7px;pointer-events:none}
+.toast{background:rgba(6,9,15,.98);border:1px solid var(--border);border-radius:9px;padding:9px 14px;display:flex;align-items:center;gap:9px;font-size:.8rem;min-width:250px;max-width:340px;pointer-events:auto;animation:tIn .25s cubic-bezier(.34,1.56,.64,1);box-shadow:0 7px 22px rgba(0,0,0,.55)}
+@keyframes tIn{from{transform:translateX(108%);opacity:0}to{transform:translateX(0);opacity:1}}
+@keyframes tOut{from{transform:translateX(0);opacity:1}to{transform:translateX(108%);opacity:0}}
+
+/* ── ALERTS ── */
+.alt{padding:9px 14px;border-radius:var(--rsm);display:flex;align-items:center;gap:8px;font-size:.81rem;margin-bottom:9px}
+.alt-w{background:rgba(240,149,9,.08);border:1px solid rgba(240,149,9,.24);color:var(--warn)}
+.alt-d{background:rgba(232,65,74,.08);border:1px solid rgba(232,65,74,.24);color:var(--err)}
+.alt-ok{background:rgba(15,185,128,.08);border:1px solid rgba(15,185,128,.24);color:var(--ok)}
+.alt-i{background:rgba(58,130,245,.08);border:1px solid rgba(58,130,245,.24);color:var(--info)}
+
+/* ── BUDGET ── */
+.bud-row{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px}
+.bud-item{padding:12px 0;border-bottom:1px solid rgba(255,255,255,.035)}
+.bud-item:last-child{border-bottom:none}
+.bud-pct{font-size:.66rem;color:var(--txt-m);margin-top:3px}
+
+/* ── SETTINGS ── */
+.s-sec{padding:20px 0;border-bottom:1px solid var(--border)}
+.s-sec:last-child{border-bottom:none;padding-bottom:0}
+.s-title{font-family:var(--serif);font-size:1rem;color:var(--primary);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.s-row{display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid rgba(255,255,255,.028)}
+.s-row:last-child{border-bottom:none}
+.s-rlbl{font-size:.86rem;font-weight:500}
+.s-rdesc{font-size:.74rem;color:var(--txt-m);margin-top:2px}
+
+/* ── LOADING ── */
+.ld{position:fixed;inset:0;background:var(--bg-deep);display:flex;flex-direction:column;justify-content:center;align-items:center;z-index:1000;color:var(--primary);gap:13px}
+.ld i{font-size:1.9rem;animation:spin .85s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── HELPERS ── */
+.tok{color:var(--ok)!important}.terr{color:var(--err)!important}.tpri{color:var(--primary)!important}.twarn{color:var(--warn)!important}.tinfo{color:var(--info)!important}.tmut{color:var(--txt-m)!important}
+.fw6{font-weight:600}.serif{font-family:var(--serif)}
+.mt4{margin-top:4px}.mt8{margin-top:8px}.mt12{margin-top:12px}.mt16{margin-top:16px}
+.mb8{margin-bottom:8px}.mb16{margin-bottom:16px}.mb18{margin-bottom:18px}
+.df{display:flex}.g8{gap:8px}.g12{gap:12px}.ac{align-items:center}.sb{justify-content:space-between}
+.sep{border:none;border-top:1px solid var(--border);margin:16px 0}
+
+/* ── RESPONSIVE ── */
+@media(max-width:1100px){.g-charts{grid-template-columns:1fr 1fr}}
+@media(max-width:900px){
+  :root{--sw:0px}
+  .sidebar{transform:translateX(-264px);width:264px}
+  .sidebar.open{transform:translateX(0)}
+  .main-wrap{margin-left:0}
+  .g2,.g-charts{grid-template-columns:1fr}
+  .fr,.fr3{grid-template-columns:1fr}
+  .content{padding:14px}
+  .topbar{padding:0 13px;height:58px}
+  .top-date{display:none}
+  #mbtn{display:inline-flex!important}
+}
+@media(max-width:520px){
+  .grid-kpi{grid-template-columns:1fr 1fr}
+  .fbar{flex-direction:column;align-items:stretch}
+  .fbar .fc,.fsrch{width:100%}
+  .top-r .btn-o,.top-r .btn-g{display:none}
+}
+</style>
+</head>
+<body>
+<div id="tc" class="tc"></div>
+
+<!-- ═══════════ TELA DE BLOQUEIO ═══════════ -->
+<div id="lockScreen" style="display:none;position:fixed;inset:0;z-index:3000;background:var(--bg-deep);align-items:center;justify-content:center;padding:18px">
+  <div style="position:absolute;inset:0;background:radial-gradient(ellipse 70% 50% at 50% 30%,rgba(12,20,40,.95) 0%,transparent 70%)"></div>
+  <div style="position:relative;width:100%;max-width:380px;text-align:center">
+    <div style="width:64px;height:64px;border-radius:16px;background:rgba(197,160,89,.1);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;margin:0 auto 22px"><i class="ph ph-lock-key" style="font-size:1.9rem;color:var(--primary)"></i></div>
+    <div class="brand-row" style="justify-content:center;margin-bottom:5px"><div class="brand-name" style="font-size:2rem">Central</div><div class="brand-gem"></div></div>
+    <div class="brand-tag" style="margin-bottom:30px">Financeira · Acesso Protegido</div>
+
+    <!-- Setup inicial (primeira vez) -->
+    <div id="lockSetup" style="display:none;text-align:left">
+      <div class="alt alt-i mb18"><i class="ph ph-info"></i><span style="font-size:.78rem">Defina suas senhas de proteção. <strong>Anote-as</strong> — sem a senha de criptografia os dados são irrecuperáveis.</span></div>
+      <div class="fg"><label>Senha de Acesso (login)</label><input type="password" id="setupLogin" class="fc" placeholder="Mínimo 4 caracteres"></div>
+      <div class="fg"><label>Confirmar Senha de Acesso</label><input type="password" id="setupLogin2" class="fc" placeholder="Repita a senha"></div>
+      <hr class="sep">
+      <div class="fg"><label>Senha de Criptografia dos Dados</label><input type="password" id="setupCrypto" class="fc" placeholder="Use uma senha forte e diferente"><div class="fhint">Criptografa os dados na nuvem e nos backups</div></div>
+      <div class="fg"><label>Confirmar Senha de Criptografia</label><input type="password" id="setupCrypto2" class="fc" placeholder="Repita a senha"></div>
+      <button class="btn btn-p" style="width:100%;justify-content:center" onclick="setupSenhas()"><i class="ph ph-shield-check"></i>Ativar Proteção</button>
+      <button class="btn btn-g btn-sm" style="width:100%;justify-content:center;margin-top:8px" onclick="pularProtecao()">Continuar sem proteção</button>
+    </div>
+
+    <!-- Login (já configurado) -->
+    <div id="lockLogin" style="display:none">
+      <div class="fg" style="text-align:left"><label>Senha de Acesso</label><input type="password" id="loginPass" class="fc" placeholder="Digite sua senha" onkeydown="if(event.key==='Enter')fazerLogin()" autofocus></div>
+      <div id="loginErr" style="color:var(--err);font-size:.78rem;margin-bottom:12px;min-height:18px"></div>
+      <button class="btn btn-p" style="width:100%;justify-content:center" onclick="fazerLogin()"><i class="ph ph-sign-in"></i>Entrar</button>
+      <div style="font-size:.72rem;color:var(--txt-m);margin-top:18px;line-height:1.6">Esqueceu a senha? Não há recuperação por segurança. Você pode <button onclick="resetProtecao()" style="background:none;border:none;color:var(--err);cursor:pointer;text-decoration:underline;font-size:.72rem;padding:0">redefinir tudo</button> (apaga os dados locais).</div>
+    </div>
+  </div>
+</div>
+
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sidebar">
+  <div class="brand">
+    <div class="brand-row"><div class="brand-name">Central</div><div class="brand-gem"></div></div>
+    <div class="brand-tag">Financeira · Dashboard</div>
+  </div>
+  <nav class="nav-menu">
+    <div class="nav-sec">Visão Geral</div>
+    <div class="nav-item active" data-t="dash"><i class="ph ph-squares-four"></i>Painel</div>
+    <div class="nav-item" data-t="trans"><i class="ph ph-list-dashes"></i>Lançamentos</div>
+    <div class="nav-sec">Gestão</div>
+    <div class="nav-item" data-t="patr"><i class="ph ph-vault"></i>Contas & Reservas</div>
+    <div class="nav-item" data-t="cart"><i class="ph ph-credit-card"></i>Cartões</div>
+    <div class="nav-item" data-t="fat"><i class="ph ph-receipt"></i>Faturas <span class="nav-badge" id="bdgFat" style="display:none">0</span></div>
+    <div class="nav-sec">Planejamento</div>
+    <div class="nav-item" data-t="orc"><i class="ph ph-target"></i>Orçamento</div>
+    <div class="nav-sec">Sistema</div>
+    <div class="nav-item" data-t="cfg"><i class="ph ph-gear-six"></i>Configurações</div>
+  </nav>
+  <div class="sidebar-foot">
+    <div class="sync-row"><span class="sync-dot warn" id="syncDot"></span><span id="syncLbl" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Local · IndexedDB</span></div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main-wrap">
+  <header class="topbar">
+    <div class="df ac g8">
+      <button class="btn-ic" id="mbtn" style="display:none" onclick="document.getElementById('sidebar').classList.toggle('open')"><i class="ph ph-list" style="font-size:1.15rem"></i></button>
+      <div class="pg-title" id="pgTitle">Painel de Controle.</div>
+    </div>
+    <div class="top-r">
+      <span class="top-date" id="topDate"></span>
+      <button class="btn btn-g btn-sm" onclick="exportCSV()" title="Exportar CSV"><i class="ph ph-file-csv"></i></button>
+      <button class="btn btn-o btn-sm" onclick="exportBackup()"><i class="ph ph-download-simple"></i>Backup</button>
+      <input type="file" id="impInp" accept=".json" style="display:none" onchange="importBackup(this.files[0])">
+      <button class="btn btn-o btn-sm" onclick="document.getElementById('impInp').click()"><i class="ph ph-upload-simple"></i>Restaurar</button>
+      <button class="btn btn-p" onclick="abrirNovaTrans()"><i class="ph ph-plus-circle"></i>Lançamento</button>
+    </div>
+  </header>
+
+  <main class="content">
+
+    <!-- ════ PAINEL ════ -->
+    <div class="tab active" id="tab-dash">
+      <div class="card mb18" style="padding:12px 18px;display:flex;align-items:center;justify-content:space-between;gap:14px">
+        <span style="font-size:.72rem;color:var(--txt-m);text-transform:uppercase;letter-spacing:1px;display:flex;align-items:center;gap:7px"><i class="ph ph-funnel-simple"></i>Período</span>
+        <div class="df ac g8">
+          <select id="filtMes" class="fc" style="width:auto;min-width:195px;padding:6px 11px;font-size:.8rem"></select>
+          <button class="btn-ic" onclick="renderDash()" title="Atualizar"><i class="ph ph-arrows-clockwise"></i></button>
+        </div>
+      </div>
+      <div class="grid-kpi" id="kpiCont"></div>
+      <div id="alertsCont"></div>
+      <div class="g-charts">
+        <div class="card">
+          <div class="card-hd"><span class="c-title"><i class="ph ph-chart-bar"></i>Receitas vs Despesas · Últimos 6 Meses</span></div>
+          <div style="position:relative;height:230px"><canvas id="chFluxo"></canvas></div>
+        </div>
+        <div class="card">
+          <div class="card-hd"><span class="c-title"><i class="ph ph-chart-pie-slice"></i>Despesas por Categoria</span></div>
+          <div style="position:relative;height:230px"><canvas id="chCat"></canvas></div>
+        </div>
+      </div>
+      <div class="card mb18" id="budDashCard" style="display:none">
+        <div class="card-hd">
+          <span class="c-title"><i class="ph ph-target"></i>Orçamento do Período</span>
+          <button class="btn btn-g btn-sm" onclick="navTo('orc')"><i class="ph ph-arrow-right"></i></button>
+        </div>
+        <div id="budDashContent"></div>
+      </div>
+      <div class="card">
+        <div class="card-hd">
+          <span class="c-title"><i class="ph ph-trend-up"></i>Evolução Patrimonial Mensal</span>
+          <button class="btn-ic" id="btnEvol" onclick="toggleEvol()" title="Mostrar/Ocultar"><i class="ph ph-caret-up"></i></button>
+        </div>
+        <div id="evolWrap">
+          <div class="tw"><table id="tblEvol" style="font-size:.82rem"></table></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════ LANÇAMENTOS ════ -->
+    <div class="tab" id="tab-trans">
+      <div class="card" style="padding:0">
+        <div style="padding:18px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
+          <h3 class="serif" style="font-size:1.15rem;color:var(--primary)">Lançamentos</h3>
+          <div class="df g8">
+            <button class="btn btn-g btn-sm" onclick="exportCSV()"><i class="ph ph-file-csv"></i>CSV</button>
+            <button class="btn btn-p btn-sm" onclick="abrirNovaTrans()"><i class="ph ph-plus"></i>Novo</button>
+          </div>
+        </div>
+        <div class="fbar">
+          <div class="fsrch"><i class="ph ph-magnifying-glass"></i><input type="text" id="fBusca" class="fc" placeholder="Buscar lançamento..." oninput="aplicarFiltros()"></div>
+          <select id="fTipo" class="fc" onchange="aplicarFiltros()"><option value="">Todos os tipos</option><option value="Entrada">Receitas</option><option value="Saída">Despesas</option><option value="Transferência">Transferências</option></select>
+          <select id="fCat" class="fc" onchange="aplicarFiltros()"><option value="">Todas categorias</option></select>
+          <select id="fMesTr" class="fc" onchange="aplicarFiltros()"><option value="">Todos os meses</option></select>
+        </div>
+        <div class="tw"><table><thead><tr><th>Data</th><th>Descrição</th><th>Categoria</th><th>Tipo</th><th>Origem/Destino</th><th class="td-r">Valor</th><th>Ações</th></tr></thead><tbody id="tbTrans"></tbody></table></div>
+        <div id="pagBar" class="pag"></div>
+      </div>
+    </div>
+
+    <!-- ════ PATRIMÔNIO ════ -->
+    <div class="tab" id="tab-patr">
+      <div class="df sb ac mb18">
+        <div>
+          <h3 class="serif" style="font-size:1.35rem;color:var(--primary)">Contas & Reservas</h3>
+          <p style="font-size:.8rem;color:var(--txt-m);margin-top:3px">Patrimônio total em <span id="ptTotal" class="tpri fw6"></span></p>
+        </div>
+        <button class="btn btn-p" onclick="abrirNovaConta()"><i class="ph ph-plus-circle"></i>Adicionar Conta</button>
+      </div>
+      <div class="g3" id="gridContas"></div>
+    </div>
+
+    <!-- ════ CARTÕES ════ -->
+    <div class="tab" id="tab-cart">
+      <div class="df sb ac mb18">
+        <h3 class="serif" style="font-size:1.35rem;color:var(--primary)">Cartões de Crédito</h3>
+        <button class="btn btn-p" onclick="abrirNovoCartao()"><i class="ph ph-plus-circle"></i>Adicionar Cartão</button>
+      </div>
+      <div class="g3" id="gridCartoes"></div>
+    </div>
+
+    <!-- ════ FATURAS ════ -->
+    <div class="tab" id="tab-fat">
+      <div class="df sb ac mb18">
+        <h3 class="serif" style="font-size:1.35rem;color:var(--primary)">Faturas</h3>
+        <label style="font-size:.8rem;color:var(--txt-m);display:flex;align-items:center;gap:7px;cursor:pointer">
+          <input type="checkbox" id="chkPagas" onchange="renderFaturas()" style="accent-color:var(--primary)">Exibir pagas
+        </label>
+      </div>
+      <div id="fatCont"></div>
+    </div>
+
+    <!-- ════ ORÇAMENTO ════ -->
+    <div class="tab" id="tab-orc">
+      <div class="df sb ac mb18">
+        <div>
+          <h3 class="serif" style="font-size:1.35rem;color:var(--primary)">Orçamento Mensal</h3>
+          <p style="font-size:.8rem;color:var(--txt-m);margin-top:3px">Defina limites de gasto por categoria</p>
+        </div>
+        <button class="btn btn-p" onclick="abrirNovoOrc()"><i class="ph ph-plus-circle"></i>Nova Meta</button>
+      </div>
+      <div class="g2">
+        <div class="card"><div class="card-hd"><span class="c-title"><i class="ph ph-list-bullets"></i>Metas Cadastradas</span></div><div id="orcList"></div></div>
+        <div class="card"><div class="card-hd"><span class="c-title"><i class="ph ph-chart-bar"></i>Progresso · Mês Atual</span></div><div id="orcProg"></div></div>
+      </div>
+    </div>
+
+    <!-- ════ CONFIGURAÇÕES ════ -->
+    <div class="tab" id="tab-cfg">
+      <div class="card">
+        <h3 class="serif" style="font-size:1.35rem;color:var(--primary);margin-bottom:4px">Configurações</h3>
+        <p style="font-size:.8rem;color:var(--txt-m)">Sincronização, dados e preferências do sistema</p>
+
+        <div class="s-sec">
+          <div class="s-title"><i class="ph ph-shield-check"></i>Segurança</div>
+          <div id="secStatus"></div>
+          <div class="s-row"><div><div class="s-rlbl">Senha de Acesso (login)</div><div class="s-rdesc">Bloqueia o app ao abrir</div></div><button class="btn btn-o btn-sm" onclick="abrirTrocaSenha('login')"><i class="ph ph-key"></i><span id="btnLoginTxt">Definir</span></button></div>
+          <div class="s-row"><div><div class="s-rlbl">Senha de Criptografia</div><div class="s-rdesc">Embaralha dados na nuvem e nos backups</div></div><button class="btn btn-o btn-sm" onclick="abrirTrocaSenha('crypto')"><i class="ph ph-lock"></i><span id="btnCryptoTxt">Definir</span></button></div>
+          <div class="s-row"><div><div class="s-rlbl">Bloqueio por Inatividade</div><div class="s-rdesc">Trava automaticamente após 10 min parado</div></div><span class="badge b-gold" id="idleBadge">Ativo</span></div>
+          <div class="s-row" style="border-bottom:none"><div><div class="s-rlbl">Bloquear Agora</div><div class="s-rdesc">Trava manualmente a sessão</div></div><button class="btn btn-o btn-sm" onclick="bloquearAgora()"><i class="ph ph-lock-key"></i>Bloquear</button></div>
+        </div>
+
+        <div class="s-sec">
+          <div class="s-title"><i class="ph ph-cloud"></i>Sincronização em Nuvem (Multi-Dispositivo)</div>
+          <div class="alt alt-i mb18"><i class="ph ph-info"></i><span>Use o <strong>JSONBin.io</strong> para sincronizar seus dados entre dispositivos. Crie uma conta gratuita, crie um Bin vazio e insira as credenciais abaixo. Seu Bin ID fica na URL após criá-lo.</span></div>
+          <div class="fr">
+            <div class="fg"><label>Bin ID</label><input type="text" id="cfgBinId" class="fc" placeholder="Ex: 64a1b2c3d4e5f6..."><div class="fhint">Visível na URL do Bin no JSONBin.io</div></div>
+            <div class="fg"><label>Access Key</label><input type="password" id="cfgApiKey" class="fc" placeholder="$2a$10$..."><div class="fhint">Em Account → API Keys no JSONBin.io</div></div>
+          </div>
+          <div class="fg" style="display:flex;align-items:center;gap:9px">
+            <input type="checkbox" id="cfgAutoSync" style="accent-color:var(--primary);width:15px;height:15px">
+            <label style="font-size:.84rem;margin:0;text-transform:none;letter-spacing:0;color:var(--txt)" for="cfgAutoSync">Sincronizar automaticamente a cada salvo</label>
+          </div>
+          <div class="df g8" style="flex-wrap:wrap">
+            <button class="btn btn-o btn-sm" onclick="salvarCfgSync()"><i class="ph ph-floppy-disk"></i>Salvar Config</button>
+            <button class="btn btn-p btn-sm" onclick="syncEnviar()"><i class="ph ph-cloud-arrow-up"></i>Enviar para Nuvem</button>
+            <button class="btn btn-o btn-sm" onclick="syncBaixar()"><i class="ph ph-cloud-arrow-down"></i>Baixar da Nuvem</button>
+          </div>
+          <div id="syncInfo" style="font-size:.75rem;color:var(--txt-m);margin-top:10px"></div>
+        </div>
+
+        <div class="s-sec">
+          <div class="s-title"><i class="ph ph-database"></i>Gerenciamento de Dados</div>
+          <div class="s-row"><div><div class="s-rlbl">Exportar Backup JSON</div><div class="s-rdesc">Cópia completa de todos os dados</div></div><button class="btn btn-o btn-sm" onclick="exportBackup()"><i class="ph ph-download-simple"></i>Baixar</button></div>
+          <div class="s-row"><div><div class="s-rlbl">Importar Backup JSON</div><div class="s-rdesc">Restaurar de arquivo anterior</div></div><button class="btn btn-o btn-sm" onclick="document.getElementById('impInp').click()"><i class="ph ph-upload-simple"></i>Restaurar</button></div>
+          <div class="s-row"><div><div class="s-rlbl">Exportar Lançamentos CSV</div><div class="s-rdesc">Compatível com Excel e Google Sheets</div></div><button class="btn btn-o btn-sm" onclick="exportCSV()"><i class="ph ph-file-csv"></i>Exportar</button></div>
+          <div class="s-row"><div><div class="s-rlbl">Motor de Armazenamento</div><div class="s-rdesc" id="stDesc">Detectando...</div></div><span class="badge b-gray" id="stBadge">...</span></div>
+          <div class="s-row" style="border-bottom:none"><div><div class="s-rlbl terr">Limpar Todos os Dados</div><div class="s-rdesc">Remove permanentemente todas as informações</div></div><button class="btn btn-d btn-sm" onclick="limparDados()"><i class="ph ph-trash"></i>Limpar</button></div>
+        </div>
+
+        <div class="s-sec">
+          <div class="s-title"><i class="ph ph-tag"></i>Categorias Personalizadas</div>
+          <div id="catList" style="display:flex;flex-wrap:wrap;gap:7px;margin-bottom:14px"></div>
+          <div class="df g8"><input type="text" id="novaCat" class="fc" placeholder="Nova categoria..." style="flex:1"><button class="btn btn-p" onclick="addCategoria()"><i class="ph ph-plus"></i>Adicionar</button></div>
+        </div>
+
+        <div class="s-sec" style="border-bottom:none">
+          <div class="s-title"><i class="ph ph-info"></i>Sobre</div>
+          <p style="font-size:.83rem;color:var(--txt-m);line-height:1.75"><strong style="color:var(--txt)">Central Financeira v3.0</strong><br>Sistema de controle financeiro pessoal com armazenamento local (IndexedDB) e sincronização em nuvem opcional via JSONBin.io. Backup regular recomendado.</p>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- MODAL: TRANSAÇÃO -->
+<div class="overlay" id="mTrans">
+  <div class="modal">
+    <div class="mhd"><h3 id="mTransTit">Novo Lançamento</h3><button class="mclose" onclick="fechar('mTrans')"><i class="ph ph-x"></i></button></div>
+    <form id="fTrans"><input type="hidden" id="eTransId">
+      <div class="mbd">
+        <div class="fr">
+          <div class="fg"><label>Tipo de Movimento</label><select id="tTipo" class="fc" required onchange="onTipoChange()"><option value="Saída">💸 Despesa (Saída)</option><option value="Entrada">💰 Receita (Entrada)</option><option value="Transferência">↔️ Transferência</option></select></div>
+          <div class="fg"><label>Data</label><input type="date" id="tData" class="fc" required></div>
+        </div>
+        <div class="fg" id="dDesc"><label>Descrição</label><input type="text" id="tDesc" class="fc" placeholder="Ex: Supermercado, Salário..." required></div>
+        <div class="fr" id="dValCat">
+          <div class="fg"><label>Valor (R$)</label><input type="number" step="0.01" min="0.01" id="tValor" class="fc" placeholder="0,00" required></div>
+          <div class="fg" id="dCatGrp"><label>Categoria</label><select id="tCat" class="fc" required></select></div>
+        </div>
+        <div id="dMeio">
+          <div class="fg"><label>Meio de Pagamento</label><select id="tForma" class="fc" onchange="onFormaChange()" required><option value="conta">Conta / Carteira</option><option value="cartao">Cartão de Crédito</option></select></div>
+          <div class="fg" id="dConta"><label>Conta</label><select id="tContaId" class="fc"></select></div>
+          <div class="fg" id="dCartao" style="display:none"><label>Cartão</label><select id="tCartaoId" class="fc"></select></div>
+          <div class="fg" id="dParc" style="display:none"><label>Número de Parcelas</label><input type="number" id="tParc" class="fc" value="1" min="1" max="72"><div class="fhint" id="hParc"></div></div>
+        </div>
+        <div id="dTransf" style="display:none">
+          <div class="fr">
+            <div class="fg"><label>Conta Origem</label><select id="tOrigem" class="fc"></select></div>
+            <div class="fg"><label>Conta Destino</label><select id="tDest" class="fc"></select></div>
+          </div>
+        </div>
+      </div>
+      <div class="mft"><button type="button" class="btn btn-g" onclick="fechar('mTrans')">Cancelar</button><button type="submit" class="btn btn-p">Salvar Lançamento</button></div>
+    </form>
+  </div>
+</div>
+
+<!-- MODAL: CONTA -->
+<div class="overlay" id="mConta">
+  <div class="modal modal-sm">
+    <div class="mhd"><h3 id="mContaTit">Nova Conta</h3><button class="mclose" onclick="fechar('mConta')"><i class="ph ph-x"></i></button></div>
+    <form id="fConta"><input type="hidden" id="eContaId">
+      <div class="mbd">
+        <div class="fg"><label>Nome da Conta</label><input id="cNome" class="fc" placeholder="Ex: Nubank, XP, Caixa..." required></div>
+        <div class="fr">
+          <div class="fg"><label>Tipo</label><select id="cTipo" class="fc" required><option>Conta Corrente</option><option>Poupança</option><option>Reserva de Emergência</option><option>Investimento</option><option>Carteira (Dinheiro)</option></select></div>
+          <div class="fg"><label>Saldo Atual (R$)</label><input type="number" step="0.01" id="cSaldo" class="fc" placeholder="0,00" required></div>
+        </div>
+      </div>
+      <div class="mft"><button type="button" class="btn btn-g" onclick="fechar('mConta')">Cancelar</button><button type="submit" class="btn btn-p">Salvar</button></div>
+    </form>
+  </div>
+</div>
+
+<!-- MODAL: CARTÃO -->
+<div class="overlay" id="mCartao">
+  <div class="modal modal-sm">
+    <div class="mhd"><h3 id="mCartTit">Novo Cartão</h3><button class="mclose" onclick="fechar('mCartao')"><i class="ph ph-x"></i></button></div>
+    <form id="fCartao"><input type="hidden" id="eCartId">
+      <div class="mbd">
+        <div class="fg"><label>Nome / Banco Emissor</label><input id="ccNome" class="fc" placeholder="Ex: Nubank, Itaú Personnalité..." required></div>
+        <div class="fr">
+          <div class="fg"><label>Limite (R$)</label><input type="number" step="0.01" id="ccLimite" class="fc" placeholder="0,00" required></div>
+          <div class="fg"><label>Dia Vencimento</label><input type="number" id="ccVenc" class="fc" min="1" max="31" placeholder="10" required></div>
+        </div>
+        <div class="fg"><label>Dia Fechamento</label><input type="number" id="ccFech" class="fc" min="1" max="31" placeholder="3" required><div class="fhint">Compras após este dia entram na próxima fatura</div></div>
+      </div>
+      <div class="mft"><button type="button" class="btn btn-g" onclick="fechar('mCartao')">Cancelar</button><button type="submit" class="btn btn-p">Salvar</button></div>
+    </form>
+  </div>
+</div>
+
+<!-- MODAL: PAGAR FATURA -->
+<div class="overlay" id="mFatura">
+  <div class="modal">
+    <div class="mhd"><h3>Liquidar Fatura</h3><button class="mclose" onclick="fechar('mFatura')"><i class="ph ph-x"></i></button></div>
+    <form id="fFatura"><input type="hidden" id="pfCartId"><input type="hidden" id="pfRef">
+      <div class="mbd">
+        <div id="pfInfo" class="card mb18" style="padding:16px;background:rgba(3,5,10,.5)"></div>
+        <div class="fr">
+          <div class="fg"><label>Valor a Pagar (R$)</label><input type="number" step="0.01" id="pfValor" class="fc" required></div>
+          <div class="fg"><label>Data do Pagamento</label><input type="date" id="pfData" class="fc" required></div>
+        </div>
+        <div class="fg"><label>Debitar da Conta</label><select id="pfConta" class="fc"></select></div>
+      </div>
+      <div class="mft"><button type="button" class="btn btn-g" onclick="fechar('mFatura')">Cancelar</button><button type="submit" class="btn btn-p">Confirmar Pagamento</button></div>
+    </form>
+  </div>
+</div>
+
+<!-- MODAL: ORÇAMENTO -->
+<div class="overlay" id="mOrc">
+  <div class="modal modal-sm">
+    <div class="mhd"><h3 id="mOrcTit">Nova Meta</h3><button class="mclose" onclick="fechar('mOrc')"><i class="ph ph-x"></i></button></div>
+    <form id="fOrc"><input type="hidden" id="eOrcId">
+      <div class="mbd">
+        <div class="fg"><label>Categoria</label><select id="orcCat" class="fc" required></select></div>
+        <div class="fg"><label>Limite Mensal (R$)</label><input type="number" step="0.01" id="orcValor" class="fc" placeholder="0,00" required></div>
+      </div>
+      <div class="mft"><button type="button" class="btn btn-g" onclick="fechar('mOrc')">Cancelar</button><button type="submit" class="btn btn-p">Salvar Meta</button></div>
+    </form>
+  </div>
+</div>
+
+<!-- MODAL: TROCAR SENHA -->
+<div class="overlay" id="mSenha">
+  <div class="modal modal-sm">
+    <div class="mhd"><h3 id="mSenhaTit">Definir Senha</h3><button class="mclose" onclick="fechar('mSenha')"><i class="ph ph-x"></i></button></div>
+    <form id="fSenha"><input type="hidden" id="senhaTipo">
+      <div class="mbd">
+        <div id="senhaAviso"></div>
+        <div class="fg" id="senhaAtualGrp"><label>Senha Atual</label><input type="password" id="senhaAtual" class="fc" placeholder="Digite a senha atual"></div>
+        <div class="fg"><label>Nova Senha</label><input type="password" id="senhaNova" class="fc" placeholder="Mínimo 4 caracteres" required></div>
+        <div class="fg"><label>Confirmar Nova Senha</label><input type="password" id="senhaNova2" class="fc" placeholder="Repita a nova senha" required></div>
+        <div id="senhaErr" style="color:var(--err);font-size:.78rem;min-height:16px"></div>
+      </div>
+      <div class="mft"><button type="button" class="btn btn-g" onclick="fechar('mSenha')">Cancelar</button><button type="submit" class="btn btn-p">Salvar</button></div>
+    </form>
+  </div>
+</div>
+
+<!-- MODAL: CONFIRMAR -->
+<div class="overlay" id="mConfirm">
+  <div class="modal modal-sm">
+    <div class="mhd"><h3 id="cfmTit" class="serif">Confirmação</h3><button class="mclose" onclick="fechar('mConfirm')"><i class="ph ph-x"></i></button></div>
+    <div class="mbd"><p id="cfmMsg" style="color:var(--txt-m);line-height:1.7"></p></div>
+    <div class="mft"><button type="button" class="btn btn-g" onclick="fechar('mConfirm')">Cancelar</button><button type="button" class="btn btn-d btn-sm" id="cfmBtn">Confirmar</button></div>
+  </div>
+</div>
+
+<!-- MODAL: EXCLUIR PARCELA -->
+<div class="overlay" id="mParc">
+  <div class="modal modal-sm">
+    <div class="mhd"><h3 class="serif">Excluir Parcelado</h3><button class="mclose" onclick="fechar('mParc')"><i class="ph ph-x"></i></button></div>
+    <div class="mbd">
+      <p style="color:var(--txt-m);line-height:1.7;margin-bottom:18px">Esta transação faz parte de uma compra parcelada. Como deseja prosseguir?</p>
+      <div style="display:flex;flex-direction:column;gap:7px">
+        <button type="button" class="btn btn-d" id="btnParcEsta">Apenas esta parcela</button>
+        <button type="button" class="btn btn-d" id="btnParcTodas" style="background:rgba(120,10,10,.25)">Todas as parcelas do grupo</button>
+        <button type="button" class="btn btn-g" onclick="fechar('mParc')">Cancelar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FAB AJUDA -->
+<button onclick="abrir('mAjuda')" style="position:fixed;bottom:22px;right:22px;background:var(--primary);border:none;border-radius:50%;width:46px;height:46px;cursor:pointer;color:var(--bg-deep);font-size:1.15rem;box-shadow:0 7px 18px rgba(197,160,89,.38);z-index:99;display:flex;align-items:center;justify-content:center;transition:var(--ease)" title="Ajuda"><i class="ph-fill ph-question"></i></button>
+
+<div class="overlay" id="mAjuda">
+  <div class="modal">
+    <div class="mhd"><h3>📖 Guia Rápido</h3><button class="mclose" onclick="fechar('mAjuda')"><i class="ph ph-x"></i></button></div>
+    <div class="mbd" style="line-height:1.8;color:var(--txt)">
+      <p><strong style="color:var(--primary)">1. Configuração Inicial</strong><br>Acesse <em>Contas & Reservas</em> e <em>Cartões</em> para cadastrar seus ativos antes de lançar transações.</p><hr class="sep">
+      <p><strong style="color:var(--primary)">2. Lançamentos</strong><br>Use <strong>+ Lançamento</strong> para registrar receitas, despesas e transferências entre contas. Despesas no débito consomem saldo; no crédito, consomem limite do cartão.</p><hr class="sep">
+      <p><strong style="color:var(--primary)">3. Parcelamentos</strong><br>Ao registrar no cartão, informe o número de parcelas. O sistema distribui automaticamente nas faturas corretas.</p><hr class="sep">
+      <p><strong style="color:var(--primary)">4. Faturas</strong><br>Na aba <em>Faturas</em>, veja todas as faturas por período. Clique em <strong>Liquidar</strong> para registrar o pagamento e restabelecer o limite.</p><hr class="sep">
+      <p><strong style="color:var(--primary)">5. Orçamento</strong><br>Defina limites mensais por categoria. O painel mostra automaticamente o progresso.</p><hr class="sep">
+      <p><strong style="color:var(--primary)">6. Multi-Dispositivo</strong><br>Em <em>Configurações</em>, configure a sincronização com <strong>JSONBin.io</strong> (gratuito) para acessar de qualquer dispositivo.</p>
+    </div>
+  </div>
+</div>
+
+<script>
+// ════════════════════════════════════════
+// SEGURANÇA: SENHA MESTRA + CRIPTOGRAFIA
+// ════════════════════════════════════════
+// Estrutura em localStorage 'fin_sec':
+//   { loginHash, loginSalt, cryptoSalt, cryptoCheck }
+// - loginHash: PBKDF2 da senha de login (verificação de acesso)
+// - cryptoSalt: salt p/ derivar chave AES da senha de criptografia
+// - cryptoCheck: token cifrado p/ validar a senha de criptografia
+const getSec=()=>JSON.parse(localStorage.getItem('fin_sec')||'null');
+const setSec=s=>localStorage.setItem('fin_sec',JSON.stringify(s));
+let CRYPTO_KEY=null;            // CryptoKey AES-GCM em memória (sessão)
+let SEC_ATIVO=false;           // proteção habilitada?
+const enc=new TextEncoder(), dec=new TextDecoder();
+const b64=buf=>btoa(String.fromCharCode(...new Uint8Array(buf)));
+const unb64=str=>Uint8Array.from(atob(str),c=>c.charCodeAt(0));
+
+async function pbkdf2(senha,salt,iter=150000){
+  const base=await crypto.subtle.importKey('raw',enc.encode(senha),'PBKDF2',false,['deriveBits','deriveKey']);
+  return crypto.subtle.deriveKey(
+    {name:'PBKDF2',salt,iterations:iter,hash:'SHA-256'},
+    base,{name:'AES-GCM',length:256},false,['encrypt','decrypt']);
+}
+async function hashSenha(senha,salt){
+  const base=await crypto.subtle.importKey('raw',enc.encode(senha),'PBKDF2',false,['deriveBits']);
+  const bits=await crypto.subtle.deriveBits({name:'PBKDF2',salt,iterations:150000,hash:'SHA-256'},base,256);
+  return b64(bits);
+}
+async function aesEncrypt(key,texto){
+  const iv=crypto.getRandomValues(new Uint8Array(12));
+  const ct=await crypto.subtle.encrypt({name:'AES-GCM',iv},key,enc.encode(texto));
+  return {iv:b64(iv),ct:b64(ct)};
+}
+async function aesDecrypt(key,iv,ct){
+  const pt=await crypto.subtle.decrypt({name:'AES-GCM',iv:unb64(iv)},key,unb64(ct));
+  return dec.decode(pt);
+}
+// Embala objeto -> string cifrada (ou texto puro se sem proteção)
+async function packData(obj){
+  const json=JSON.stringify(obj);
+  if(!CRYPTO_KEY)return json;
+  const {iv,ct}=await aesEncrypt(CRYPTO_KEY,json);
+  return JSON.stringify({_enc:true,iv,ct,v:3});
+}
+// Desembala: aceita cifrado OU texto puro (retrocompatível)
+async function unpackData(str){
+  try{
+    const p=typeof str==='string'?JSON.parse(str):str;
+    if(p&&p._enc){
+      if(!CRYPTO_KEY)throw new Error('Dados criptografados — senha necessária');
+      return JSON.parse(await aesDecrypt(CRYPTO_KEY,p.iv,p.ct));
+    }
+    return p;
+  }catch(e){throw e}
+}
+
+// ── SETUP INICIAL ──
+async function setupSenhas(){
+  const l1=document.getElementById('setupLogin').value, l2=document.getElementById('setupLogin2').value;
+  const c1=document.getElementById('setupCrypto').value, c2=document.getElementById('setupCrypto2').value;
+  if(l1.length<4){notify('Senha de acesso muito curta (mín. 4)','warn');return}
+  if(l1!==l2){notify('Senhas de acesso não conferem','err');return}
+  if(c1.length<4){notify('Senha de criptografia muito curta (mín. 4)','warn');return}
+  if(c1!==c2){notify('Senhas de criptografia não conferem','err');return}
+  const loginSalt=crypto.getRandomValues(new Uint8Array(16));
+  const cryptoSalt=crypto.getRandomValues(new Uint8Array(16));
+  const loginHash=await hashSenha(l1,loginSalt);
+  CRYPTO_KEY=await pbkdf2(c1,cryptoSalt);
+  const chk=await aesEncrypt(CRYPTO_KEY,'CHECK_OK');
+  setSec({loginHash,loginSalt:b64(loginSalt),cryptoSalt:b64(cryptoSalt),cryptoCheck:chk});
+  SEC_ATIVO=true;
+  // Recriptografa os dados já existentes
+  await bootDados();
+  await recriptografarTudo();
+  document.getElementById('lockScreen').style.display='none';
+  iniciarIdleTimer();
+  notify('Proteção ativada com sucesso!','ok');
+  await atualizarTudo();
+}
+
+function pularProtecao(){
+  document.getElementById('lockScreen').style.display='none';
+  SEC_ATIVO=false; CRYPTO_KEY=null;
+  iniciarIdleTimer();
+  bootDados().then(()=>atualizarTudo());
+}
+
+// ── LOGIN ──
+async function fazerLogin(){
+  const sec=getSec(); const pass=document.getElementById('loginPass').value;
+  const errEl=document.getElementById('loginErr'); errEl.innerText='';
+  const h=await hashSenha(pass,unb64(sec.loginSalt));
+  if(h!==sec.loginHash){errEl.innerText='Senha incorreta. Tente novamente.';document.getElementById('loginPass').value='';return}
+  // Login OK
+  if(sec.cryptoSalt){
+    // Há criptografia → pedir a segunda senha p/ desbloquear os dados
+    pedirSenhaCrypto();
+  }else{
+    // Apenas login, sem criptografia
+    SEC_ATIVO=true; CRYPTO_KEY=null;
+    document.getElementById('lockScreen').style.display='none';
+    iniciarIdleTimer();
+    await bootDados();
+    await atualizarTudo();
+    notify('Bem-vindo de volta!','ok');
+  }
+}
+
+// Após login, solicita a senha de criptografia (separada) p/ desbloquear dados
+function pedirSenhaCrypto(){
+  const sec=getSec();
+  document.getElementById('lockLogin').innerHTML=`
+    <div class="fg" style="text-align:left"><label>Senha de Criptografia</label><input type="password" id="cryptoPass" class="fc" placeholder="Senha que cifra seus dados" onkeydown="if(event.key==='Enter')desbloquearCrypto()" autofocus></div>
+    <div id="cryptoErr" style="color:var(--err);font-size:.78rem;margin-bottom:12px;min-height:18px"></div>
+    <button class="btn btn-p" style="width:100%;justify-content:center" onclick="desbloquearCrypto()"><i class="ph ph-lock-open"></i>Desbloquear Dados</button>`;
+  document.getElementById('cryptoPass').focus();
+}
+async function desbloquearCrypto(){
+  const sec=getSec(); const pass=document.getElementById('cryptoPass').value;
+  const errEl=document.getElementById('cryptoErr'); errEl.innerText='';
+  try{
+    const key=await pbkdf2(pass,unb64(sec.cryptoSalt));
+    const ok=await aesDecrypt(key,sec.cryptoCheck.iv,sec.cryptoCheck.ct);
+    if(ok!=='CHECK_OK')throw new Error();
+    CRYPTO_KEY=key; SEC_ATIVO=true;
+    document.getElementById('lockScreen').style.display='none';
+    iniciarIdleTimer();
+    await bootDados();
+    await atualizarTudo();
+    notify('Bem-vindo de volta!','ok');
+  }catch{errEl.innerText='Senha de criptografia incorreta.';document.getElementById('cryptoPass').value=''}
+}
+
+// ── BLOQUEAR ──
+function bloquearAgora(){
+  const sec=getSec();
+  if(!sec||!sec.loginHash){
+    // Sem senha de login configurada — não há como bloquear/destravar
+    notify('Defina uma Senha de Acesso para usar o bloqueio','warn');
+    navTo('cfg');
+    return;
+  }
+  CRYPTO_KEY=null;
+  document.getElementById('lockSetup').style.display='none';
+  document.getElementById('lockLogin').style.display='block';
+  document.getElementById('lockLogin').innerHTML=`
+    <div class="fg" style="text-align:left"><label>Senha de Acesso</label><input type="password" id="loginPass" class="fc" placeholder="Digite sua senha" onkeydown="if(event.key==='Enter')fazerLogin()" autofocus></div>
+    <div id="loginErr" style="color:var(--err);font-size:.78rem;margin-bottom:12px;min-height:18px"></div>
+    <button class="btn btn-p" style="width:100%;justify-content:center" onclick="fazerLogin()"><i class="ph ph-sign-in"></i>Entrar</button>
+    <div style="font-size:.72rem;color:var(--txt-m);margin-top:18px;line-height:1.6">Esqueceu a senha? Não há recuperação por segurança. Você pode <button onclick="resetProtecao()" style="background:none;border:none;color:var(--err);cursor:pointer;text-decoration:underline;font-size:.72rem;padding:0">redefinir tudo</button> (apaga os dados locais).</div>`;
+  document.getElementById('lockScreen').style.display='flex';
+  document.getElementById('loginPass')?.focus();
+  pararIdleTimer();
+}
+
+// ── RESET (esqueceu senha) ──
+function resetProtecao(){
+  confirm2('⚠️ Redefinir Proteção','Isso APAGA todos os dados locais e remove as senhas. Só faça isso se esqueceu a senha. Backups na nuvem permanecem (mas precisam da senha original). Continuar?',async()=>{
+    localStorage.removeItem('fin_sec');
+    if(useLS){['fin_contas','fin_cartoes','fin_trans','fin_orc'].forEach(k=>localStorage.removeItem(k))}
+    else{try{indexedDB.deleteDatabase('CentralFinDB')}catch(e){}}
+    location.reload();
+  });
+}
+
+// ── IDLE TIMER (10 min) ──
+const IDLE_MS=10*60*1000;
+let idleTimer=null;
+function iniciarIdleTimer(){
+  if(!SEC_ATIVO)return;
+  pararIdleTimer();
+  const reset=()=>{clearTimeout(idleTimer);idleTimer=setTimeout(()=>bloquearAgora(),IDLE_MS)};
+  ['click','keydown','mousemove','touchstart','scroll'].forEach(ev=>document.addEventListener(ev,reset,{passive:true}));
+  window._idleReset=reset; reset();
+}
+function pararIdleTimer(){
+  clearTimeout(idleTimer);
+  if(window._idleReset){['click','keydown','mousemove','touchstart','scroll'].forEach(ev=>document.removeEventListener(ev,window._idleReset));window._idleReset=null}
+}
+
+// ── TROCA DE SENHA (em Configurações) ──
+window.abrirTrocaSenha=tipo=>{
+  const sec=getSec();
+  document.getElementById('fSenha').reset();
+  document.getElementById('senhaTipo').value=tipo;
+  document.getElementById('senhaErr').innerText='';
+  const jaTem=sec&&(tipo==='login'?sec.loginHash:sec.cryptoSalt);
+  document.getElementById('senhaAtualGrp').style.display=jaTem?'block':'none';
+  document.getElementById('mSenhaTit').innerText=(jaTem?'Alterar ':'Definir ')+(tipo==='login'?'Senha de Acesso':'Senha de Criptografia');
+  document.getElementById('senhaAviso').innerHTML=tipo==='crypto'
+    ?'<div class="alt alt-w" style="font-size:.76rem"><i class="ph ph-warning"></i><span>Alterar esta senha recriptografa todos os dados. Anote a nova senha — sem ela os dados são irrecuperáveis.</span></div>'
+    :'<div class="alt alt-i" style="font-size:.76rem"><i class="ph ph-info"></i><span>Esta senha bloqueia o acesso ao app ao abrir.</span></div>';
+  abrir('mSenha');
+};
+
+document.getElementById('fSenha').addEventListener('submit',async e=>{
+  e.preventDefault();
+  const tipo=document.getElementById('senhaTipo').value;
+  const atual=document.getElementById('senhaAtual').value;
+  const nova=document.getElementById('senhaNova').value;
+  const nova2=document.getElementById('senhaNova2').value;
+  const errEl=document.getElementById('senhaErr'); errEl.innerText='';
+  let sec=getSec()||{};
+  const jaTem=tipo==='login'?sec.loginHash:sec.cryptoSalt;
+  if(nova.length<4){errEl.innerText='Senha muito curta (mín. 4 caracteres)';return}
+  if(nova!==nova2){errEl.innerText='As senhas não conferem';return}
+
+  if(tipo==='login'){
+    if(jaTem){const h=await hashSenha(atual,unb64(sec.loginSalt));if(h!==sec.loginHash){errEl.innerText='Senha atual incorreta';return}}
+    const salt=crypto.getRandomValues(new Uint8Array(16));
+    sec.loginHash=await hashSenha(nova,salt); sec.loginSalt=b64(salt);
+    setSec(sec); SEC_ATIVO=true; iniciarIdleTimer();
+    notify('Senha de acesso definida!','ok');
+  }else{
+    // crypto
+    if(jaTem){
+      const keyAtual=await pbkdf2(atual,unb64(sec.cryptoSalt));
+      try{const ok=await aesDecrypt(keyAtual,sec.cryptoCheck.iv,sec.cryptoCheck.ct);if(ok!=='CHECK_OK')throw 0}
+      catch{errEl.innerText='Senha de criptografia atual incorreta';return}
+    }
+    // 1) Lê todos os dados com a chave ATUAL (pode ser null se 1ª vez)
+    const dadosAtuais=await Promise.all([getContas(),getCartoes(),getTrans(),getOrcs()]);
+    // 2) Gera nova chave e atualiza credenciais
+    const salt=crypto.getRandomValues(new Uint8Array(16));
+    const novaKey=await pbkdf2(nova,salt);
+    CRYPTO_KEY=novaKey; sec.cryptoSalt=b64(salt);
+    sec.cryptoCheck=await aesEncrypt(novaKey,'CHECK_OK');
+    setSec(sec); SEC_ATIVO=true; iniciarIdleTimer();
+    // 3) Regrava todos os dados já cifrados com a nova chave
+    const[c,k,t,o]=dadosAtuais;
+    for(const x of c)await saveConta(x);
+    for(const x of k)await saveCartao(x);
+    for(const x of t)await saveTrans(x);
+    for(const x of o)await saveOrc(x);
+    notify('Senha de criptografia definida! Dados recriptografados.','ok');
+  }
+  fechar('mSenha'); renderCfg();
+});
+
+// Recriptografa os dados em disco com a CRYPTO_KEY atual
+async function recriptografarTudo(){
+  // Os dados já estão em memória descriptografados; basta regravar
+  const[c,k,t,o]=await Promise.all([getContas(),getCartoes(),getTrans(),getOrcs()]);
+  for(const x of c)await saveConta(x);
+  for(const x of k)await saveCartao(x);
+  for(const x of t)await saveTrans(x);
+  for(const x of o)await saveOrc(x);
+}
+
+// CATEGORIAS
+// ════════════════════════════════════════
+const CATS_DEFAULT=['Alimentação','Moradia','Transporte','Lazer','Saúde','Educação','Vestuário','Assinatura','Pet','Presentes','Salário','Freelance','Investimento','Rendimento','Pagamento de Fatura','Transferência','Outros'];
+function getCats(){const s=localStorage.getItem('fin_cats');return s?JSON.parse(s):[...CATS_DEFAULT]}
+function saveCats(c){localStorage.setItem('fin_cats',JSON.stringify(c))}
+
+// ════════════════════════════════════════
+// GLOBAIS
+// ════════════════════════════════════════
+let DB=null, useLS=false, stType='IndexedDB';
+let chFluxo=null, chCat=null;
+let transCache=[], pgAtual=1;
+const PG=25;
+
+// ════════════════════════════════════════
+// UTILS — BUGS CORRIGIDOS
+// ════════════════════════════════════════
+// BUG CORRIGIDO: formatMoney agora usa toLocaleString com separador de milhar correto
+const fmt=v=>{ const n=parseFloat(v)||0; return n.toLocaleString('pt-BR',{style:'currency',currency:'BRL'}); };
+const hoje=()=>new Date().toISOString().split('T')[0];
+const mesStr=d=>d.substring(0,7);
+const mesNome=s=>{ const[a,m]=s.split('-'); const ns=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez']; return `${ns[+m-1]}/${a.slice(2)}`; };
+
+function addMeses(ds,n){
+  const[a,m,d]=ds.split('-').map(Number);
+  const dt=new Date(a,m-1+n,1);
+  const max=new Date(dt.getFullYear(),dt.getMonth()+1,0).getDate();
+  dt.setDate(Math.min(d,max));
+  return dt.toISOString().split('T')[0];
+}
+function last6(){
+  const r=[];const now=new Date();
+  for(let i=5;i>=0;i--){const d=new Date(now.getFullYear(),now.getMonth()-i,1);r.push(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`)}
+  return r;
+}
+
+// ════════════════════════════════════════
+// NOTIFICAÇÕES
+// ════════════════════════════════════════
+function notify(msg,type='ok'){
+  const c=document.getElementById('tc'),t=document.createElement('div');
+  t.className='toast';
+  const cols={ok:'var(--ok)',warn:'var(--warn)',err:'var(--err)',info:'var(--info)'};
+  const ics={ok:'ph-check-circle tok',warn:'ph-warning twarn',err:'ph-x-circle terr',info:'ph-info tinfo'};
+  t.style.borderColor=cols[type]||cols.ok;
+  t.innerHTML=`<i class="ph ${ics[type]||ics.ok}" style="font-size:1.1rem;flex-shrink:0"></i><span>${msg}</span>`;
+  c.appendChild(t);
+  setTimeout(()=>{t.style.animation='tOut .25s forwards';setTimeout(()=>t.remove(),250)},3500);
+}
+let cfmCb=null;
+function confirm2(tit,msg,cb){
+  document.getElementById('cfmTit').innerText=tit;
+  document.getElementById('cfmMsg').innerText=msg;
+  cfmCb=cb; abrir('mConfirm');
+}
+document.getElementById('cfmBtn').addEventListener('click',()=>{if(cfmCb)cfmCb();fechar('mConfirm')});
+
+// ════════════════════════════════════════
+// INDEXEDDB — versão 2 (adiciona orcamentos)
+// ════════════════════════════════════════
+function initDB(){
+  return new Promise((res,rej)=>{
+    const req=indexedDB.open('CentralFinDB',2);
+    req.onerror=()=>rej(req.error);
+    req.onsuccess=()=>{DB=req.result;res()};
+    req.onupgradeneeded=e=>{
+      const db=e.target.result,old=e.oldVersion;
+      if(old<1){
+        ['contas','cartoes','transacoes'].forEach(s=>{if(!db.objectStoreNames.contains(s))db.createObjectStore(s,{keyPath:'id'})});
+        e.target.transaction.objectStore('contas').put({id:1,nome:'Conta Principal',tipo:'Conta Corrente',saldoBase:0});
+      }
+      if(old<2){if(!db.objectStoreNames.contains('orcamentos'))db.createObjectStore('orcamentos',{keyPath:'id'})}
+    };
+  });
+}
+async function getStore(name,mode='readonly'){
+  if(useLS)throw new Error('ls');
+  if(!DB)await initDB();
+  return DB.transaction(name,mode).objectStore(name);
+}
+function switchLS(){
+  if(useLS)return; useLS=true; stType='localStorage';
+  document.getElementById('stBadge').innerText='localStorage';
+  document.getElementById('stDesc').innerText='Fallback ativo — localStorage';
+  const defs=[JSON.stringify([{id:1,nome:'Conta Principal',tipo:'Conta Corrente',saldoBase:0}]),'[]','[]','[]'];
+  ['fin_contas','fin_cartoes','fin_trans','fin_orc'].forEach((k,i)=>{if(!localStorage.getItem(k))localStorage.setItem(k,defs[i])});
+}
+
+// ── CRUD FACTORY (com criptografia em repouso) ──
+// Cada registro guarda o id em claro (chave) e o conteúdo cifrado em _p quando há proteção.
+async function encRecord(item){
+  if(!CRYPTO_KEY)return item;
+  const {iv,ct}=await aesEncrypt(CRYPTO_KEY,JSON.stringify(item));
+  return {id:item.id,_enc:true,iv,ct};
+}
+async function decRecord(rec){
+  if(rec&&rec._enc){
+    if(!CRYPTO_KEY)throw new Error('Registro cifrado sem chave');
+    return JSON.parse(await aesDecrypt(CRYPTO_KEY,rec.iv,rec.ct));
+  }
+  return rec;
+}
+function makeStore(sName,lsKey){
+  const getRaw=async()=>{
+    if(useLS)return JSON.parse(localStorage.getItem(lsKey)||'[]');
+    const s=await getStore(sName);
+    return new Promise(res=>{const r=s.getAll();r.onsuccess=()=>res(r.result||[]);r.onerror=()=>{switchLS();res(getRaw())}});
+  };
+  const get=async()=>{
+    const raw=await getRaw();
+    return Promise.all(raw.map(decRecord));
+  };
+  const save=async item=>{
+    const rec=await encRecord(item);
+    if(useLS){const l=await getRaw(),i=l.findIndex(x=>x.id===rec.id);if(i>=0)l[i]=rec;else l.push(rec);localStorage.setItem(lsKey,JSON.stringify(l))}
+    else{const s=await getStore(sName,'readwrite');return new Promise((res,rej)=>{const r=s.put(rec);r.onsuccess=res;r.onerror=()=>{switchLS();save(item).then(res).catch(rej)}})}
+  };
+  const del=async id=>{
+    if(useLS){localStorage.setItem(lsKey,JSON.stringify((await getRaw()).filter(x=>x.id!==id)))}
+    else{const s=await getStore(sName,'readwrite');return new Promise((res,rej)=>{const r=s.delete(id);r.onsuccess=res;r.onerror=()=>{switchLS();del(id).then(res).catch(rej)}})}
+  };
+  return{get,save,del};
+}
+const CS=makeStore('contas','fin_contas'), KS=makeStore('cartoes','fin_cartoes');
+const TS=makeStore('transacoes','fin_trans'), OS=makeStore('orcamentos','fin_orc');
+const getContas=()=>CS.get(), saveConta=c=>CS.save(c), delConta=id=>CS.del(id);
+const getCartoes=()=>KS.get(), saveCartao=c=>KS.save(c), delCartao=id=>KS.del(id);
+const getTrans=()=>TS.get(), saveTrans=t=>TS.save(t), delTrans=id=>TS.del(id);
+const getOrcs=()=>OS.get(), saveOrc=o=>OS.save(o), delOrc=id=>OS.del(id);
+
+// ════════════════════════════════════════
+// CLOUD SYNC — JSONBin.io
+// ════════════════════════════════════════
+const getSyncCfg=()=>JSON.parse(localStorage.getItem('fin_sync')||'{}');
+const setSyncCfg=c=>localStorage.setItem('fin_sync',JSON.stringify(c));
+
+function updateSyncUI(state){
+  const dot=document.getElementById('syncDot'),lbl=document.getElementById('syncLbl');
+  dot.className='sync-dot '+(state==='ok'?'ok':state==='err'?'err':'warn');
+  const cfg=getSyncCfg();
+  if(state==='ok'&&cfg.lastSync){lbl.innerText=`Cloud · ${new Date(cfg.lastSync).toLocaleDateString('pt-BR')}`}
+  else{lbl.innerText=`Local · ${stType}`}
+}
+
+window.salvarCfgSync=()=>{
+  const bid=document.getElementById('cfgBinId').value.trim();
+  const key=document.getElementById('cfgApiKey').value.trim();
+  const auto=document.getElementById('cfgAutoSync').checked;
+  if(!bid||!key){notify('Preencha Bin ID e Access Key','warn');return}
+  setSyncCfg({binId:bid,apiKey:key,autoSync:auto,lastSync:null});
+  notify('Configuração de sync salva!','ok');
+};
+
+window.syncEnviar=async()=>{
+  const cfg=getSyncCfg();
+  if(!cfg.binId||!cfg.apiKey){notify('Configure as credenciais primeiro','warn');navTo('cfg');return}
+  try{
+    const dados={contas:await getContas(),cartoes:await getCartoes(),transacoes:await getTrans(),orcamentos:await getOrcs(),versao:3,em:new Date().toISOString()};
+    // Criptografa o pacote inteiro se houver proteção ativa
+    const body=CRYPTO_KEY?await packData(dados):JSON.stringify(dados);
+    const res=await fetch(`https://api.jsonbin.io/v3/b/${cfg.binId}`,{method:'PUT',headers:{'Content-Type':'application/json','X-Access-Key':cfg.apiKey},body});
+    if(!res.ok)throw new Error(`HTTP ${res.status}`);
+    cfg.lastSync=new Date().toISOString(); setSyncCfg(cfg);
+    updateSyncUI('ok');
+    document.getElementById('syncInfo').innerText=`✓ Enviado em: ${new Date(cfg.lastSync).toLocaleString('pt-BR')}`+(CRYPTO_KEY?' (criptografado)':'');
+    notify('Dados enviados para a nuvem!','ok');
+  }catch(e){updateSyncUI('err');notify(`Erro ao sincronizar: ${e.message}`,'err')}
+};
+
+window.syncBaixar=async()=>{
+  const cfg=getSyncCfg();
+  if(!cfg.binId||!cfg.apiKey){notify('Configure as credenciais primeiro','warn');navTo('cfg');return}
+  confirm2('Baixar da Nuvem','Isso vai sobrescrever TODOS os dados locais com os da nuvem. Continuar?',async()=>{
+    try{
+      const res=await fetch(`https://api.jsonbin.io/v3/b/${cfg.binId}/latest`,{headers:{'X-Access-Key':cfg.apiKey}});
+      if(!res.ok)throw new Error(`HTTP ${res.status}`);
+      const rec=(await res.json()).record;
+      let d;
+      // Detecta payload criptografado
+      if(rec&&rec._enc){
+        if(!CRYPTO_KEY){notify('Dados da nuvem estão criptografados. Desbloqueie com a senha de criptografia primeiro.','err');return}
+        try{d=await unpackData(rec)}catch{notify('Senha de criptografia não corresponde aos dados da nuvem','err');return}
+      }else{d=rec}
+      if(d.contas)for(const c of d.contas)await saveConta(c);
+      if(d.cartoes)for(const c of d.cartoes)await saveCartao(c);
+      if(d.transacoes)for(const t of d.transacoes)await saveTrans(t);
+      if(d.orcamentos)for(const o of d.orcamentos)await saveOrc(o);
+      cfg.lastSync=new Date().toISOString(); setSyncCfg(cfg);
+      updateSyncUI('ok');
+      await atualizarTudo();
+      notify('Dados baixados da nuvem com sucesso!','ok');
+    }catch(e){updateSyncUI('err');notify(`Erro ao baixar: ${e.message}`,'err')}
+  });
+};
+
+async function autoSync(){const cfg=getSyncCfg();if(cfg.autoSync&&cfg.binId&&cfg.apiKey)await syncEnviar()}
+
+// ════════════════════════════════════════
+// LÓGICA DE FATURAS
+// ════════════════════════════════════════
+function getPeriodo(cartao,ds){
+  const dt=new Date(ds+'T12:00:00'),dia=dt.getDate(),mes=dt.getMonth()+1,ano=dt.getFullYear();
+  if(dia>cartao.fechamento){const pm=mes===12?1:mes+1,pa=mes===12?ano+1:ano;return `${pa}-${String(pm).padStart(2,'0')}`}
+  return `${ano}-${String(mes).padStart(2,'0')}`;
+}
+async function calcFaturas(cartaoId){
+  const cartao=(await getCartoes()).find(c=>c.id===cartaoId);
+  if(!cartao)return[];
+  const trs=(await getTrans()).filter(t=>t.forma==='cartao'&&t.cartao_id===cartaoId);
+  const per={};
+  for(const t of trs){
+    const p=t.periodo_fatura||getPeriodo(cartao,t.data);
+    if(!per[p])per[p]={gastos:0,pagamentos:0};
+    if(t.tipo==='Saída')per[p].gastos+=t.valor;
+    if(t.tipo==='Entrada'&&t.cat==='Pagamento de Fatura')per[p].pagamentos+=t.valor;
+  }
+  const hj=new Date();hj.setHours(0,0,0,0);
+  return Object.keys(per).sort().reverse().map(periodo=>{
+    const[a,m]=periodo.split('-').map(Number);
+    let venc=new Date(a,m-1,cartao.vencimento);
+    if(venc<new Date(a,m-1,cartao.fechamento))venc.setMonth(venc.getMonth()+1);
+    const dias=Math.ceil((venc-hj)/(864e5));
+    const total=per[periodo].gastos,pago=per[periodo].pagamentos,saldo=Math.max(0,total-pago);
+    return{periodo,total,pago,saldo,dias,cartaoNome:cartao.nome,cartaoVenc:cartao.vencimento};
+  });
+}
+
+// ════════════════════════════════════════
+// RENDER: DASHBOARD
+// ════════════════════════════════════════
+async function renderDash(){
+  const[trans,contas,cartoes]=await Promise.all([getTrans(),getContas(),getCartoes()]);
+  const mesFiltro=document.getElementById('filtMes')?.value||'ALL';
+  const mesAtual=new Date().toISOString().substring(0,7);
+  const prevMes=(()=>{const d=new Date();d.setMonth(d.getMonth()-1);return d.toISOString().substring(0,7)})();
+
+  const filtrar=(mes)=>mes==='ALL'?trans.filter(t=>!['Pagamento de Fatura','Transferência'].includes(t.cat)):trans.filter(t=>t.data.startsWith(mes)&&!['Pagamento de Fatura','Transferência'].includes(t.cat));
+  const fil=filtrar(mesFiltro), filPrev=filtrar(prevMes);
+
+  const rec=fil.filter(t=>t.tipo==='Entrada').reduce((a,b)=>a+b.valor,0);
+  const desp=fil.filter(t=>t.tipo==='Saída').reduce((a,b)=>a+b.valor,0);
+  const recPrev=filPrev.filter(t=>t.tipo==='Entrada').reduce((a,b)=>a+b.valor,0);
+  const despPrev=filPrev.filter(t=>t.tipo==='Saída').reduce((a,b)=>a+b.valor,0);
+
+  let pat=0;
+  for(const c of contas){
+    const tr=trans.filter(t=>t.forma==='conta'&&t.conta_id===c.id);
+    pat+=c.saldoBase+tr.filter(t=>t.tipo==='Entrada').reduce((a,b)=>a+b.valor,0)-tr.filter(t=>t.tipo==='Saída').reduce((a,b)=>a+b.valor,0);
+  }
+  let devTot=0,limDisp=0;
+  for(const c of cartoes){
+    const tr=trans.filter(t=>t.forma==='cartao'&&t.cartao_id===c.id);
+    const g=tr.filter(t=>t.tipo==='Saída').reduce((a,b)=>a+b.valor,0);
+    const p=tr.filter(t=>t.tipo==='Entrada'&&t.cat==='Pagamento de Fatura').reduce((a,b)=>a+b.valor,0);
+    const dev=Math.max(0,g-p); devTot+=dev; limDisp+=Math.max(0,c.limite-dev);
+  }
+  const liq=rec-desp, liqPrev=recPrev-despPrev;
+  const txPoup=rec>0?Math.round((liq/rec)*100):0;
+
+  const delta=(cur,prev,inv=false)=>{
+    if(prev===0)return`<span class="kpi-delta nt">— sem histórico</span>`;
+    const pct=Math.round(((cur-prev)/prev)*100);
+    const positivo=inv?(pct<=0):(pct>=0);
+    return`<span class="kpi-delta ${positivo?'up':'dn'}"><i class="ph ph-trend-${positivo?'up':'down'}"></i>${pct>=0?'+':''}${pct}% vs mês ant.</span>`;
+  };
+
+  const kpis=[
+    {lbl:'Patrimônio Líquido',val:pat,cls:'tpri',ico:'ph-vault',d:''},
+    {lbl:'Receitas',val:rec,cls:'tok',ico:'ph-trend-up',d:delta(rec,recPrev)},
+    {lbl:'Despesas',val:desp,cls:'terr',ico:'ph-trend-down',d:delta(desp,despPrev,true)},
+    {lbl:'Resultado Líquido',val:liq,cls:liq>=0?'tok':'terr',ico:'ph-scales',d:delta(liq,liqPrev)},
+    {lbl:'Fatura Cartões',val:devTot,cls:'twarn',ico:'ph-credit-card',d:''},
+    {lbl:'Taxa de Poupança',val:`${txPoup}%`,cls:txPoup>=20?'tok':txPoup>=0?'twarn':'terr',ico:'ph-piggy-bank',d:'',raw:true},
+  ];
+  document.getElementById('kpiCont').innerHTML=kpis.map(k=>`
+    <div class="kpi"><div class="kpi-lbl">${k.lbl} <i class="ph ${k.ico}"></i></div>
+    <div class="kpi-val ${k.cls}">${k.raw?k.val:fmt(k.val)}</div>${k.d}</div>`).join('');
+
+  // Alertas
+  let alts='';
+  for(const c of cartoes){
+    const fats=await calcFaturas(c.id);
+    for(const f of fats){
+      if(f.saldo>0&&f.dias>=0&&f.dias<=5)alts+=`<div class="alt alt-w"><i class="ph ph-warning"></i>Fatura <strong>${c.nome}</strong> vence em ${f.dias} dia(s) — ${fmt(f.saldo)} pendente</div>`;
+      else if(f.saldo>0&&f.dias<0)alts+=`<div class="alt alt-d"><i class="ph ph-x-circle"></i>Fatura <strong>${c.nome}</strong> em atraso há ${Math.abs(f.dias)} dia(s)! — ${fmt(f.saldo)}</div>`;
+    }
+  }
+  document.getElementById('alertsCont').innerHTML=alts;
+
+  // Gráfico 1: tendência 6 meses (BUG FIX: antes mostrava só 2 barras)
+  if(chFluxo)chFluxo.destroy();
+  const l6=last6(),rdArr=[],ddArr=[];
+  for(const m of l6){
+    const tf=trans.filter(t=>t.data.startsWith(m)&&!['Pagamento de Fatura','Transferência'].includes(t.cat));
+    rdArr.push(tf.filter(t=>t.tipo==='Entrada').reduce((a,b)=>a+b.valor,0));
+    ddArr.push(tf.filter(t=>t.tipo==='Saída').reduce((a,b)=>a+b.valor,0));
+  }
+  chFluxo=new Chart(document.getElementById('chFluxo').getContext('2d'),{
+    type:'bar',
+    data:{labels:l6.map(mesNome),datasets:[
+      {label:'Receitas',data:rdArr,backgroundColor:'rgba(15,185,128,.38)',borderColor:'#0fb980',borderWidth:1.5,borderRadius:4},
+      {label:'Despesas',data:ddArr,backgroundColor:'rgba(232,65,74,.38)',borderColor:'#e8404a',borderWidth:1.5,borderRadius:4}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{labels:{color:'#8aa2be',font:{family:'Inter',size:11},boxWidth:11}}},
+      scales:{
+        y:{grid:{color:'rgba(197,160,89,.07)'},ticks:{color:'#58718e',callback:v=>`R$${(v/1000).toFixed(0)}k`}},
+        x:{grid:{display:false},ticks:{color:'#58718e'}}
+      }
+    }
+  });
+
+  // Gráfico 2: donut categorias
+  if(chCat)chCat.destroy();
+  const cats2={};
+  fil.filter(t=>t.tipo==='Saída').forEach(t=>cats2[t.cat]=(cats2[t.cat]||0)+t.valor);
+  const pal=['#c5a059','#0fb980','#3a82f5','#f09509','#ec4899','#8b5cf6','#64748b','#ef4444','#06b6d4','#84cc16'];
+  chCat=new Chart(document.getElementById('chCat').getContext('2d'),{
+    type:'doughnut',
+    data:{labels:Object.keys(cats2),datasets:[{data:Object.values(cats2),backgroundColor:pal,borderWidth:0,hoverOffset:7}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'68%',
+      plugins:{
+        legend:{position:'right',labels:{color:'#eff3fb',font:{family:'Inter',size:10},boxWidth:9,padding:9}},
+        tooltip:{callbacks:{label:ctx=>` ${fmt(ctx.parsed)}`}}
+      }
+    }
+  });
+
+  // Orçamento no painel
+  await renderBudgetDash(mesFiltro,trans);
+
+  // Evolução patrimonial — BUG CORRIGIDO: acumulação agora em ordem crescente (ASC)
+  const res={};
+  trans.forEach(t=>{
+    if(['Pagamento de Fatura','Transferência'].includes(t.cat))return;
+    const m=mesStr(t.data);if(!res[m])res[m]={ent:0,sai:0};
+    if(t.tipo==='Entrada')res[m].ent+=t.valor;
+    else if(t.tipo==='Saída')res[m].sai+=t.valor;
+  });
+  // FIX: acumular em ASC, exibir em DESC
+  const mesesAsc=Object.keys(res).sort();
+  let acum=0;
+  const rows=mesesAsc.map(m=>{const lm=res[m].ent-res[m].sai;acum+=lm;return{m,ent:res[m].ent,sai:res[m].sai,lm,acum}});
+  const html=rows.reverse().map(r=>`
+    <tr><td><strong>${mesNome(r.m)}</strong></td>
+    <td class="tok">${fmt(r.ent)}</td><td class="terr">${fmt(r.sai)}</td>
+    <td class="${r.lm>=0?'tok':'terr'}">${fmt(r.lm)}</td>
+    <td><strong class="${r.acum>=0?'tpri':'terr'}">${fmt(r.acum)}</strong></td></tr>`).join('');
+  document.getElementById('tblEvol').innerHTML=`<thead><tr><th>Mês</th><th>Receitas</th><th>Despesas</th><th>Resultado</th><th>Acumulado</th></tr></thead><tbody>${html||'<tr><td colspan="5" class="t-empty">Sem registros para exibir.</td></tr>'}</tbody>`;
+
+  // Badge faturas na sidebar
+  let pendFat=0;
+  for(const c of cartoes){const fs=await calcFaturas(c.id);pendFat+=fs.filter(f=>f.saldo>0).length}
+  const bdg=document.getElementById('bdgFat');
+  bdg.style.display=pendFat>0?'':'none'; bdg.innerText=pendFat;
+}
+
+async function renderBudgetDash(mesFiltro,trans){
+  const orcs=await getOrcs(); const card=document.getElementById('budDashCard');
+  if(!orcs.length){card.style.display='none';return}
+  const mes=mesFiltro==='ALL'?new Date().toISOString().substring(0,7):mesFiltro;
+  const desp=trans.filter(t=>t.tipo==='Saída'&&t.data.startsWith(mes)&&t.cat!=='Transferência');
+  const html=orcs.map(o=>{
+    const g=desp.filter(t=>t.cat===o.categoria).reduce((a,b)=>a+b.valor,0);
+    const pct=o.valor>0?Math.min((g/o.valor)*100,100):0;
+    const cls=pct>=100?'err':pct>=80?'warn':'ok';
+    return`<div class="bud-item"><div class="bud-row"><span style="font-size:.84rem;font-weight:500">${o.categoria}</span><span style="font-size:.78rem;color:var(--txt-m)">${fmt(g)} / ${fmt(o.valor)}</span></div><div class="pb"><div class="pb-f ${cls}" style="width:${pct}%"></div></div></div>`;
+  }).join('');
+  card.style.display=''; document.getElementById('budDashContent').innerHTML=html;
+}
+
+// ════════════════════════════════════════
+// RENDER: LANÇAMENTOS
+// ════════════════════════════════════════
+async function carregarTrans(){
+  const[trans,contas,cartoes]=await Promise.all([getTrans(),getContas(),getCartoes()]);
+  const cMap=Object.fromEntries(contas.map(c=>[c.id,c.nome]));
+  const kMap=Object.fromEntries(cartoes.map(c=>[c.id,c.nome]));
+  transCache=trans.sort((a,b)=>new Date(b.data)-new Date(a.data)).map(t=>({
+    ...t,_orig:t.forma==='conta'?(cMap[t.conta_id]||'Removida'):(kMap[t.cartao_id]||'Removido')
+  }));
+}
+async function renderTrans(){
+  await carregarTrans();
+  // Preencher filtros
+  const cats=[...new Set(transCache.map(t=>t.cat))].sort();
+  document.getElementById('fCat').innerHTML='<option value="">Todas categorias</option>'+cats.map(c=>`<option>${c}</option>`).join('');
+  const meses=[...new Set(transCache.map(t=>mesStr(t.data)))].sort().reverse();
+  document.getElementById('fMesTr').innerHTML='<option value="">Todos os meses</option>'+meses.map(m=>`<option value="${m}">${mesNome(m)}</option>`).join('');
+  pgAtual=1; aplicarFiltros();
+}
+function aplicarFiltros(){
+  const busca=(document.getElementById('fBusca')?.value||'').toLowerCase();
+  const tipo=document.getElementById('fTipo')?.value||'';
+  const cat=document.getElementById('fCat')?.value||'';
+  const mes=document.getElementById('fMesTr')?.value||'';
+  const fil=transCache.filter(t=>{
+    if(tipo&&t.tipo!==tipo)return false;
+    if(cat&&t.cat!==cat)return false;
+    if(mes&&!t.data.startsWith(mes))return false;
+    if(busca&&!`${t.descricao} ${t.cat}`.toLowerCase().includes(busca))return false;
+    return true;
+  });
+  renderTransTabela(fil);
+}
+function renderTransTabela(fil){
+  const total=fil.length, totalPg=Math.max(1,Math.ceil(total/PG));
+  if(pgAtual>totalPg)pgAtual=totalPg;
+  const slice=fil.slice((pgAtual-1)*PG,pgAtual*PG);
+  const html=slice.map(t=>{
+    const tipoCls=t.tipo==='Entrada'?'b-ok':t.tipo==='Transferência'?'b-info':'b-err';
+    const tipoLbl=t.tipo==='Entrada'?'Receita':t.tipo==='Transferência'?'Transfer.':'Despesa';
+    const valCls=t.tipo==='Entrada'?'tok':t.tipo==='Transferência'?'tinfo':'terr';
+    const pfx=t.tipo==='Entrada'?'+ ':t.tipo==='Transferência'?'↔ ':'- ';
+    const parc=t.total_parcelas>1?`<span class="badge b-gray" style="margin-left:5px;font-size:.58rem">${t.num_parcela||1}/${t.total_parcelas}</span>`:'';
+    return`<tr>
+      <td class="td-muted" style="white-space:nowrap">${t.data.split('-').reverse().join('/')}</td>
+      <td><span style="font-weight:500">${t.descricao}</span>${parc}</td>
+      <td><span class="badge b-gray">${t.cat}</span></td>
+      <td><span class="badge ${tipoCls}">${tipoLbl}</span></td>
+      <td style="color:var(--txt-m);font-size:.8rem">${t._orig}</td>
+      <td class="td-r"><span class="${valCls} fw6">${pfx}${fmt(t.valor)}</span></td>
+      <td><div class="df g8"><button class="btn-ic" onclick="editTrans(${t.id})"><i class="ph ph-pencil-simple"></i></button><button class="btn-ic d" onclick="apagarTrans(${t.id})"><i class="ph ph-trash"></i></button></div></td>
+    </tr>`;
+  }).join('');
+  document.getElementById('tbTrans').innerHTML=html||`<tr><td colspan="7" class="t-empty"><i class="ph ph-funnel-simple" style="font-size:1.5rem;display:block;margin-bottom:7px"></i>Nenhum lançamento encontrado.</td></tr>`;
+  // Paginação
+  let pg='';
+  if(totalPg>1){
+    pg+=`<span class="pg-info">${(pgAtual-1)*PG+1}–${Math.min(pgAtual*PG,total)} de ${total}</span>`;
+    pg+=`<button class="pgb" onclick="goPage(${pgAtual-1})" ${pgAtual===1?'disabled':''}><i class="ph ph-caret-left"></i></button>`;
+    const s=Math.max(1,pgAtual-2),e=Math.min(totalPg,pgAtual+2);
+    for(let p=s;p<=e;p++)pg+=`<button class="pgb ${p===pgAtual?'act':''}" onclick="goPage(${p})">${p}</button>`;
+    pg+=`<button class="pgb" onclick="goPage(${pgAtual+1})" ${pgAtual===totalPg?'disabled':''}><i class="ph ph-caret-right"></i></button>`;
+  }
+  document.getElementById('pagBar').innerHTML=pg;
+}
+function goPage(p){pgAtual=p;aplicarFiltros()}
+
+// ════════════════════════════════════════
+// RENDER: PATRIMÔNIO
+// ════════════════════════════════════════
+async function renderPatr(){
+  const[contas,trans]=await Promise.all([getContas(),getTrans()]);
+  const saldos=contas.map(c=>{
+    const tr=trans.filter(t=>t.forma==='conta'&&t.conta_id===c.id);
+    return c.saldoBase+tr.filter(t=>t.tipo==='Entrada').reduce((a,b)=>a+b.valor,0)-tr.filter(t=>t.tipo==='Saída').reduce((a,b)=>a+b.valor,0);
+  });
+  const total=saldos.reduce((a,b)=>a+b,0);
+  document.getElementById('ptTotal').innerText=fmt(total);
+  const icoMap={'Conta Corrente':'ph-bank','Poupança':'ph-piggy-bank','Reserva de Emergência':'ph-shield-check','Investimento':'ph-chart-line-up','Carteira (Dinheiro)':'ph-wallet'};
+  const html=contas.map((c,i)=>{
+    const s=saldos[i], pct=total>0?((s/total)*100).toFixed(1):0;
+    const ico=icoMap[c.tipo]||'ph-bank';
+    return`<div class="icard">
+      <div class="icard-actions"><button class="btn-ic" onclick="editConta(${c.id})"><i class="ph ph-pencil-simple"></i></button><button class="btn-ic d" onclick="excluirConta(${c.id})"><i class="ph ph-trash"></i></button></div>
+      <div class="df ac g12 mb18"><div class="icard-ico"><i class="ph ${ico}"></i></div><div><h3>${c.nome}</h3><span class="badge b-gray mt4">${c.tipo}</span></div></div>
+      <div class="kpi-val ${s<0?'terr':'tpri'}" style="font-size:1.45rem;margin-bottom:7px">${fmt(s)}</div>
+      <div class="df sb" style="font-size:.72rem;color:var(--txt-m)"><span>Base: ${fmt(c.saldoBase)}</span><span>${pct}% do total</span></div>
+      <div class="pb mt4"><div class="pb-f" style="width:${Math.max(0,pct)}%"></div></div>
+    </div>`;
+  }).join('');
+  document.getElementById('gridContas').innerHTML=html||'<div style="grid-column:1/-1;text-align:center;padding:56px;color:var(--txt-m)"><i class="ph ph-vault" style="font-size:2.5rem;display:block;margin-bottom:10px;opacity:.28"></i>Nenhuma conta cadastrada</div>';
+}
+
+// ════════════════════════════════════════
+// RENDER: CARTÕES
+// ════════════════════════════════════════
+async function renderCartoes(){
+  const[cartoes,trans]=await Promise.all([getCartoes(),getTrans()]);
+  const html=cartoes.map(c=>{
+    const tr=trans.filter(t=>t.forma==='cartao'&&t.cartao_id===c.id);
+    const g=tr.filter(t=>t.tipo==='Saída').reduce((a,b)=>a+b.valor,0);
+    const p=tr.filter(t=>t.tipo==='Entrada'&&t.cat==='Pagamento de Fatura').reduce((a,b)=>a+b.valor,0);
+    const dev=Math.max(0,g-p), disp=Math.max(0,c.limite-dev);
+    const pct=c.limite>0?(dev/c.limite)*100:0;
+    const bCls=pct>90?'err':pct>70?'warn':'';
+    return`<div class="icard">
+      <div class="icard-actions"><button class="btn-ic" onclick="editCartao(${c.id})"><i class="ph ph-pencil-simple"></i></button><button class="btn-ic d" onclick="excluirCartao(${c.id})"><i class="ph ph-trash"></i></button></div>
+      <div class="df ac g12 mb18"><div class="icard-ico"><i class="ph ph-credit-card"></i></div><h3>${c.nome}</h3></div>
+      <div class="df sb" style="font-size:.78rem;color:var(--txt-m);margin-bottom:4px"><span>Limite: ${fmt(c.limite)}</span><span>Disponível: <strong style="color:var(--txt)">${fmt(disp)}</strong></span></div>
+      <div class="cc-bg"><div class="cc-f ${bCls}" style="width:${Math.min(pct,100)}%"></div></div>
+      <div class="df sb ac">
+        <div><div style="font-size:.65rem;text-transform:uppercase;color:var(--txt-m);letter-spacing:1px">Fatura acumulada</div><div style="font-size:1.25rem;font-weight:600;color:${dev>0?'var(--warn)':'var(--ok)'};margin-top:3px">${fmt(dev)}</div></div>
+        <div style="text-align:right"><div style="font-size:.68rem;color:var(--txt-m)">Vence dia ${c.vencimento} · Fecha dia ${c.fechamento}</div><button class="btn btn-o btn-sm mt8" onclick="abrirPagarFatura(${c.id})"><i class="ph ph-arrow-up-right"></i>Liquidar</button></div>
+      </div>
+    </div>`;
+  }).join('');
+  document.getElementById('gridCartoes').innerHTML=html||'<div style="grid-column:1/-1;text-align:center;padding:56px;color:var(--txt-m)"><i class="ph ph-credit-card" style="font-size:2.5rem;display:block;margin-bottom:10px;opacity:.28"></i>Nenhum cartão cadastrado</div>';
+}
+
+// ════════════════════════════════════════
+// RENDER: FATURAS
+// ════════════════════════════════════════
+async function renderFaturas(){
+  const cartoes=await getCartoes();
+  const showPagas=document.getElementById('chkPagas')?.checked;
+  if(!cartoes.length){document.getElementById('fatCont').innerHTML='<div style="text-align:center;padding:56px;color:var(--txt-m)"><i class="ph ph-receipt" style="font-size:2.5rem;display:block;margin-bottom:10px;opacity:.28"></i>Nenhum cartão cadastrado</div>';return}
+  let html='';
+  for(const c of cartoes){
+    const fats=await calcFaturas(c.id);
+    const exibir=showPagas?fats:fats.filter(f=>f.saldo>0);
+    if(!exibir.length)continue;
+    html+=`<div class="card mb18"><div class="card-hd"><span class="c-title"><i class="ph ph-credit-card"></i>${c.nome}</span><button class="btn btn-o btn-sm" onclick="abrirPagarFatura(${c.id})"><i class="ph ph-plus"></i>Liquidar</button></div>
+      <div class="tw"><table style="border:none"><thead><tr><th>Período</th><th>Total Fatura</th><th>Pago</th><th>Saldo</th><th>Vencimento</th><th>Status</th><th>Ação</th></tr></thead><tbody>`;
+    for(const f of exibir){
+      const bCls=f.saldo<=0?'b-ok':f.dias<0?'b-err':f.dias<=5?'b-warn':'b-gray';
+      const bLbl=f.saldo<=0?'Paga':f.dias<0?`${Math.abs(f.dias)}d atraso`:f.dias<=5?`Vence em ${f.dias}d`:'Em aberto';
+      const[a,m]=f.periodo.split('-').map(Number);
+      let vd=new Date(a,m-1,c.vencimento);if(vd<new Date(a,m-1,c.fechamento))vd.setMonth(vd.getMonth()+1);
+      const vStr=vd.toLocaleDateString('pt-BR');
+      html+=`<tr><td><strong>${mesNome(f.periodo)}</strong></td><td>${fmt(f.total)}</td><td class="tok">${fmt(f.pago)}</td>
+        <td class="${f.saldo>0?'twarn':'tok'} fw6">${fmt(f.saldo)}</td><td class="td-muted">${vStr}</td>
+        <td><span class="badge ${bCls}">${bLbl}</span></td>
+        <td>${f.saldo>0?`<button class="btn btn-o btn-xs" onclick="abrirPagarFatura(${c.id},'${f.periodo}')">Liquidar</button>`:'<span style="color:var(--ok);font-size:.8rem">✓</span>'}</td></tr>`;
+    }
+    html+=`</tbody></table></div></div>`;
+  }
+  if(!html)html='<div style="text-align:center;padding:56px;color:var(--txt-m)"><i class="ph ph-check-circle" style="font-size:2.5rem;display:block;margin-bottom:10px;color:var(--ok);opacity:.7"></i>Nenhuma fatura em aberto. Parabéns!</div>';
+  document.getElementById('fatCont').innerHTML=html;
+}
+
+// ════════════════════════════════════════
+// RENDER: ORÇAMENTO
+// ════════════════════════════════════════
+async function renderOrc(){
+  const[orcs,trans]=await Promise.all([getOrcs(),getTrans()]);
+  const mes=new Date().toISOString().substring(0,7);
+  const desp=trans.filter(t=>t.tipo==='Saída'&&t.data.startsWith(mes));
+  if(!orcs.length){
+    const msg='<p style="color:var(--txt-m);text-align:center;padding:36px 16px">Nenhuma meta definida.<br><br>Clique em <strong style="color:var(--primary)">+ Nova Meta</strong> para começar.</p>';
+    document.getElementById('orcList').innerHTML=msg; document.getElementById('orcProg').innerHTML=msg; return;
+  }
+  document.getElementById('orcList').innerHTML=orcs.map(o=>`
+    <div class="df sb ac" style="padding:11px 0;border-bottom:1px solid rgba(255,255,255,.04)">
+      <div><div style="font-weight:500;font-size:.86rem">${o.categoria}</div><div style="font-size:.74rem;color:var(--txt-m)">Limite: ${fmt(o.valor)}/mês</div></div>
+      <div class="df g8"><button class="btn-ic" onclick="editOrc(${o.id})"><i class="ph ph-pencil-simple"></i></button><button class="btn-ic d" onclick="excluirOrc(${o.id})"><i class="ph ph-trash"></i></button></div>
+    </div>`).join('');
+  let tOrc=0,tGasto=0;
+  const prog=orcs.map(o=>{
+    const g=desp.filter(t=>t.cat===o.categoria).reduce((a,b)=>a+b.valor,0);
+    const pct=o.valor>0?Math.min((g/o.valor)*100,120):0;
+    const cls=pct>=100?'err':pct>=80?'warn':'ok';
+    tOrc+=o.valor; tGasto+=g;
+    return`<div class="bud-item"><div class="bud-row"><span style="font-weight:500;font-size:.84rem">${o.categoria}</span><span class="${pct>=100?'terr':'tmut'}" style="font-size:.78rem">${fmt(g)} / ${fmt(o.valor)}</span></div><div class="pb"><div class="pb-f ${cls}" style="width:${Math.min(pct,100)}%"></div></div><div class="bud-pct">${pct.toFixed(0)}% utilizado${pct>=100?' ⚠️':''}</div></div>`;
+  }).join('');
+  const tPct=tOrc>0?(tGasto/tOrc*100):0, tCls=tPct>=100?'err':tPct>=80?'warn':'ok';
+  document.getElementById('orcProg').innerHTML=`
+    <div style="padding:13px 0;border-bottom:1px solid var(--border);margin-bottom:13px">
+      <div class="bud-row"><span style="font-weight:600">Total do Orçamento</span><span style="font-size:.78rem;color:var(--txt-m)">${fmt(tGasto)} / ${fmt(tOrc)}</span></div>
+      <div class="pb"><div class="pb-f ${tCls}" style="width:${Math.min(tPct,100)}%"></div></div>
+    </div>${prog}`;
+}
+
+// ════════════════════════════════════════
+// RENDER: CONFIGURAÇÕES
+// ════════════════════════════════════════
+function renderCfg(){
+  const cfg=getSyncCfg();
+  if(cfg.binId)document.getElementById('cfgBinId').value=cfg.binId;
+  if(cfg.apiKey)document.getElementById('cfgApiKey').value=cfg.apiKey;
+  if(cfg.autoSync)document.getElementById('cfgAutoSync').checked=cfg.autoSync;
+  if(cfg.lastSync)document.getElementById('syncInfo').innerText=`✓ Última sincronização: ${new Date(cfg.lastSync).toLocaleString('pt-BR')}`;
+  if(cfg.binId&&cfg.apiKey)updateSyncUI('ok');
+  const cats=getCats();
+  document.getElementById('catList').innerHTML=cats.map(c=>`<span class="badge b-gray" style="cursor:pointer;padding:5px 10px;font-size:.72rem" onclick="rmCategoria('${c.replace(/'/g,"\\'")}')"><i class="ph ph-x" style="font-size:.6rem;margin-right:3px"></i>${c}</span>`).join('');
+  // Status de segurança
+  const sec=getSec();
+  const temLogin=sec&&sec.loginHash, temCrypto=sec&&sec.cryptoSalt;
+  const ss=document.getElementById('secStatus');
+  if(ss){
+    if(temLogin&&temCrypto&&CRYPTO_KEY)ss.innerHTML='<div class="alt alt-ok mb18"><i class="ph ph-shield-check"></i><span>Proteção total ativa: login + criptografia de dados.</span></div>';
+    else if(temLogin||temCrypto)ss.innerHTML='<div class="alt alt-w mb18"><i class="ph ph-shield-warning"></i><span>Proteção parcial. Defina ambas as senhas para segurança completa.</span></div>';
+    else ss.innerHTML='<div class="alt alt-i mb18"><i class="ph ph-shield"></i><span>Nenhuma proteção ativa. Defina as senhas abaixo para proteger seus dados.</span></div>';
+  }
+  const bl=document.getElementById('btnLoginTxt'); if(bl)bl.innerText=temLogin?'Alterar':'Definir';
+  const bc=document.getElementById('btnCryptoTxt'); if(bc)bc.innerText=temCrypto?'Alterar':'Definir';
+  const ib=document.getElementById('idleBadge'); if(ib){ib.innerText=SEC_ATIVO?'Ativo':'Inativo';ib.className='badge '+(SEC_ATIVO?'b-gold':'b-gray')}
+}
+window.addCategoria=()=>{
+  const v=document.getElementById('novaCat').value.trim();if(!v)return;
+  const cats=getCats();if(cats.includes(v)){notify('Categoria já existe','warn');return}
+  cats.push(v);saveCats(cats);document.getElementById('novaCat').value='';renderCfg();atualizarSelects();notify(`"${v}" adicionada`,'ok');
+};
+window.rmCategoria=cat=>{
+  confirm2('Remover Categoria',`Remover "${cat}"?`,()=>{saveCats(getCats().filter(c=>c!==cat));renderCfg();atualizarSelects();notify('Categoria removida','ok')});
+};
+
+// ════════════════════════════════════════
+// SELECTS
+// ════════════════════════════════════════
+async function renderFiltroMeses(){
+  const tr=await getTrans();
+  const meses=[...new Set(tr.map(t=>mesStr(t.data)))].sort().reverse();
+  const sel=document.getElementById('filtMes'); if(!sel)return;
+  const prev=sel.value||'ALL';
+  sel.innerHTML='<option value="ALL">Histórico completo</option>'+meses.map(m=>`<option value="${m}">${mesNome(m)}</option>`).join('');
+  sel.value=prev;
+}
+async function atualizarSelects(){
+  const[contas,cartoes]=await Promise.all([getContas(),getCartoes()]);
+  const cats=getCats();
+  const cOpts=contas.map(c=>`<option value="${c.id}">${c.nome}</option>`).join('');
+  const kOpts=cartoes.map(c=>`<option value="${c.id}">${c.nome}</option>`).join('');
+  const catOpts=cats.map(c=>`<option>${c}</option>`).join('');
+  const set=(id,v)=>{const el=document.getElementById(id);if(el)el.innerHTML=v};
+  set('tContaId',cOpts);set('tCartaoId',kOpts);set('tOrigem',cOpts);set('tDest',cOpts);
+  set('pfConta',cOpts);set('tCat',catOpts);set('orcCat',catOpts);
+  // hint parcelas
+  const valEl=document.getElementById('tValor'), parcEl=document.getElementById('tParc');
+  if(valEl&&parcEl){const upd=()=>{const v=parseFloat(valEl.value)||0,p=parseInt(parcEl.value)||1;document.getElementById('hParc').innerText=v>0&&p>1?`Cada parcela: ${fmt(v/p)}`:''};valEl.oninput=upd;parcEl.oninput=upd}
+}
+
+// ════════════════════════════════════════
+// MODAIS
+// ════════════════════════════════════════
+function abrir(id){document.getElementById(id).classList.add('active')}
+function fechar(id){document.getElementById(id).classList.remove('active')}
+function navTo(t){
+  document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active'));
+  const btn=document.querySelector(`.nav-item[data-t="${t}"]`);if(btn)btn.classList.add('active');
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+  document.getElementById(`tab-${t}`)?.classList.add('active');
+  document.getElementById('pgTitle').innerText=(btn?.innerText.trim().replace(/[0-9!]/g,'')||t).trim()+'.';
+  if(window.innerWidth<=900)document.getElementById('sidebar').classList.remove('open');
+}
+
+function onTipoChange(){
+  const v=document.getElementById('tTipo').value,isT=v==='Transferência';
+  document.getElementById('dMeio').style.display=isT?'none':'';
+  document.getElementById('dTransf').style.display=isT?'':'none';
+  document.getElementById('dCatGrp').style.display=isT?'none':'';
+  if(isT)document.getElementById('tCat').value='Transferência';
+}
+function onFormaChange(){
+  const f=document.getElementById('tForma').value;
+  document.getElementById('dConta').style.display=f==='conta'?'':'none';
+  document.getElementById('dCartao').style.display=f==='cartao'?'':'none';
+  document.getElementById('dParc').style.display=f==='cartao'?'':'none';
+}
+
+// ════════════════════════════════════════
+// ABRIR MODAIS
+// ════════════════════════════════════════
+window.abrirNovaTrans=()=>{
+  document.getElementById('fTrans').reset();
+  document.getElementById('eTransId').value='';
+  document.getElementById('mTransTit').innerText='Novo Lançamento';
+  document.getElementById('tData').value=hoje();
+  document.getElementById('tParc').value=1;
+  document.getElementById('hParc').innerText='';
+  onTipoChange(); onFormaChange(); abrir('mTrans');
+};
+window.abrirNovaConta=()=>{
+  document.getElementById('fConta').reset();
+  document.getElementById('eContaId').value='';
+  document.getElementById('mContaTit').innerText='Nova Conta';
+  document.getElementById('cSaldo').value=0;
+  abrir('mConta');
+};
+window.abrirNovoCartao=()=>{
+  document.getElementById('fCartao').reset();
+  document.getElementById('eCartId').value='';
+  document.getElementById('mCartTit').innerText='Novo Cartão';
+  abrir('mCartao');
+};
+window.abrirNovoOrc=()=>{
+  document.getElementById('fOrc').reset();
+  document.getElementById('eOrcId').value='';
+  document.getElementById('mOrcTit').innerText='Nova Meta de Orçamento';
+  abrir('mOrc');
+};
+
+// ════════════════════════════════════════
+// EDITAR
+// ════════════════════════════════════════
+window.editTrans=async id=>{
+  const t=(await getTrans()).find(x=>x.id===id);if(!t)return;
+  document.getElementById('eTransId').value=t.id;
+  document.getElementById('mTransTit').innerText='Editar Lançamento';
+  document.getElementById('tTipo').value=t.tipo;
+  document.getElementById('tData').value=t.data;
+  document.getElementById('tDesc').value=t.descricao.replace(/\s\(\d+\/\d+\)$/,'');
+  document.getElementById('tValor').value=t.valor;
+  document.getElementById('tCat').value=t.cat;
+  document.getElementById('tForma').value=t.forma||'conta';
+  document.getElementById('tParc').value=t.total_parcelas||1;
+  onTipoChange(); onFormaChange();
+  if(t.forma==='conta'&&t.conta_id)document.getElementById('tContaId').value=t.conta_id;
+  if(t.forma==='cartao'&&t.cartao_id)document.getElementById('tCartaoId').value=t.cartao_id;
+  abrir('mTrans');
+};
+window.editConta=async id=>{
+  const c=(await getContas()).find(x=>x.id===id);if(!c)return;
+  document.getElementById('eContaId').value=c.id;
+  document.getElementById('mContaTit').innerText='Editar Conta';
+  document.getElementById('cNome').value=c.nome;
+  document.getElementById('cTipo').value=c.tipo;
+  document.getElementById('cSaldo').value=c.saldoBase;
+  abrir('mConta');
+};
+window.editCartao=async id=>{
+  const c=(await getCartoes()).find(x=>x.id===id);if(!c)return;
+  document.getElementById('eCartId').value=c.id;
+  document.getElementById('mCartTit').innerText='Editar Cartão';
+  document.getElementById('ccNome').value=c.nome;
+  document.getElementById('ccLimite').value=c.limite;
+  document.getElementById('ccVenc').value=c.vencimento;
+  document.getElementById('ccFech').value=c.fechamento;
+  abrir('mCartao');
+};
+window.editOrc=async id=>{
+  const o=(await getOrcs()).find(x=>x.id===id);if(!o)return;
+  document.getElementById('eOrcId').value=o.id;
+  document.getElementById('mOrcTit').innerText='Editar Meta';
+  document.getElementById('orcCat').value=o.categoria;
+  document.getElementById('orcValor').value=o.valor;
+  abrir('mOrc');
+};
+
+// ════════════════════════════════════════
+// EXCLUIR
+// ════════════════════════════════════════
+window.apagarTrans=async id=>{
+  const t=(await getTrans()).find(x=>x.id===id);if(!t)return;
+  if(t.grupo_id&&t.total_parcelas>1){
+    abrir('mParc');
+    document.getElementById('btnParcEsta').onclick=async()=>{await delTrans(id);fechar('mParc');await atualizarTudo();notify('Parcela removida','ok')};
+    document.getElementById('btnParcTodas').onclick=async()=>{
+      const todas=await getTrans();for(const x of todas.filter(i=>i.grupo_id===t.grupo_id))await delTrans(x.id);
+      fechar('mParc');await atualizarTudo();notify('Todas as parcelas removidas','ok');
+    };
+  }else confirm2('Excluir Lançamento','Excluir permanentemente este lançamento?',async()=>{await delTrans(id);await atualizarTudo();notify('Lançamento removido','ok')});
+};
+window.excluirConta=id=>confirm2('Excluir Conta','Excluir esta conta? Lançamentos vinculados perderão a referência.',async()=>{await delConta(id);await atualizarTudo();notify('Conta removida','ok')});
+window.excluirCartao=id=>confirm2('Excluir Cartão','Excluir este cartão?',async()=>{await delCartao(id);await atualizarTudo();notify('Cartão removido','ok')});
+window.excluirOrc=id=>confirm2('Excluir Meta','Remover esta meta de orçamento?',async()=>{await delOrc(id);await renderOrc();notify('Meta removida','ok')});
+
+// ════════════════════════════════════════
+// MODAL PAGAR FATURA
+// ════════════════════════════════════════
+window.abrirPagarFatura=async(cartaoId,periodo=null)=>{
+  const cartao=(await getCartoes()).find(c=>c.id===cartaoId);if(!cartao)return;
+  const trans=await getTrans();
+  if(!periodo){const fs=await calcFaturas(cartaoId);const pend=fs.filter(f=>f.saldo>0);periodo=pend.length>0?pend[0].periodo:getPeriodo(cartao,hoje())}
+  const tr=trans.filter(t=>t.forma==='cartao'&&t.cartao_id===cartaoId);
+  let g=0,p=0;
+  for(const t of tr){const pp=t.periodo_fatura||getPeriodo(cartao,t.data);if(pp===periodo){if(t.tipo==='Saída')g+=t.valor;if(t.tipo==='Entrada'&&t.cat==='Pagamento de Fatura')p+=t.valor}}
+  const saldo=g-p;
+  if(saldo<=0){notify('Fatura já liquidada!','ok');return}
+  document.getElementById('pfCartId').value=cartaoId;
+  document.getElementById('pfRef').value=periodo;
+  document.getElementById('pfInfo').innerHTML=`
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:11px;font-size:.82rem">
+      <div><div style="color:var(--txt-m);font-size:.64rem;text-transform:uppercase;margin-bottom:2px">Cartão</div><strong>${cartao.nome}</strong></div>
+      <div><div style="color:var(--txt-m);font-size:.64rem;text-transform:uppercase;margin-bottom:2px">Período</div><span class="badge b-gray">${mesNome(periodo)}</span></div>
+      <div><div style="color:var(--txt-m);font-size:.64rem;text-transform:uppercase;margin-bottom:2px">Total Fatura</div><strong>${fmt(g)}</strong></div>
+      <div><div style="color:var(--txt-m);font-size:.64rem;text-transform:uppercase;margin-bottom:2px">Já Pago</div><strong class="tok">${fmt(p)}</strong></div>
+    </div>
+    <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border);font-size:.96rem;color:var(--primary)"><strong>Saldo a pagar: ${fmt(saldo)}</strong></div>`;
+  document.getElementById('pfValor').value=saldo.toFixed(2);
+  document.getElementById('pfData').value=hoje();
+  await atualizarSelects(); abrir('mFatura');
+};
+
+// ════════════════════════════════════════
+// FORM SUBMISSIONS
+// ════════════════════════════════════════
+document.getElementById('fTrans').addEventListener('submit',async e=>{
+  e.preventDefault();
+  const id=document.getElementById('eTransId').value;
+  const tipo=document.getElementById('tTipo').value;
+  const data=document.getElementById('tData').value;
+  const valor=parseFloat(document.getElementById('tValor').value);
+
+  if(tipo==='Transferência'){
+    const orig=parseInt(document.getElementById('tOrigem').value);
+    const dest=parseInt(document.getElementById('tDest').value);
+    if(orig===dest){notify('Conta origem e destino são iguais','err');return}
+    const contas=await getContas();
+    const nO=contas.find(c=>c.id===orig)?.nome||'Conta', nD=contas.find(c=>c.id===dest)?.nome||'Conta';
+    const gId=Date.now();
+    await saveTrans({id:gId,tipo:'Saída',data,descricao:`Transferência → ${nD}`,valor,cat:'Transferência',forma:'conta',conta_id:orig,transferencia_id:gId});
+    await saveTrans({id:gId+1,tipo:'Entrada',data,descricao:`Transferência ← ${nO}`,valor,cat:'Transferência',forma:'conta',conta_id:dest,transferencia_id:gId});
+    notify('Transferência registrada!','ok');
+  }else{
+    const cat=document.getElementById('tCat').value;
+    const forma=document.getElementById('tForma').value;
+    const cartaoId=forma==='cartao'?parseInt(document.getElementById('tCartaoId').value):null;
+    const totalParc=forma==='cartao'?parseInt(document.getElementById('tParc').value):1;
+    if(id){
+      const cartao=cartaoId?(await getCartoes()).find(c=>c.id===cartaoId):null;
+      await saveTrans({id:parseInt(id),tipo,data,descricao:document.getElementById('tDesc').value,valor,cat,forma,conta_id:forma==='conta'?parseInt(document.getElementById('tContaId').value):null,cartao_id:cartaoId,periodo_fatura:cartao?getPeriodo(cartao,data):null,total_parcelas:1});
+      notify('Lançamento atualizado!','ok');
+    }else if(forma==='cartao'&&totalParc>1){
+      const vParc=parseFloat((valor/totalParc).toFixed(2));
+      const diff=parseFloat((valor-vParc*totalParc).toFixed(2));
+      // BUG CORRIGIDO: usar offset maior para evitar colisão de IDs em parcelamentos
+      const gId=Date.now();
+      const cartao=(await getCartoes()).find(c=>c.id===cartaoId);
+      for(let i=0;i<totalParc;i++){
+        const dp=addMeses(data,i);
+        const vF=i===0?parseFloat((vParc+diff).toFixed(2)):vParc;
+        await saveTrans({id:gId+i*100,grupo_id:gId,tipo,data:dp,descricao:`${document.getElementById('tDesc').value} (${i+1}/${totalParc})`,valor:vF,cat,forma,conta_id:null,cartao_id:cartaoId,periodo_fatura:cartao?getPeriodo(cartao,dp):null,num_parcela:i+1,total_parcelas:totalParc});
+      }
+      notify(`Parcelado em ${totalParc}x registrado!`,'ok');
+    }else{
+      const cartao=cartaoId?(await getCartoes()).find(c=>c.id===cartaoId):null;
+      await saveTrans({id:Date.now(),tipo,data,descricao:document.getElementById('tDesc').value,valor,cat,forma,conta_id:forma==='conta'?parseInt(document.getElementById('tContaId').value):null,cartao_id:cartaoId,periodo_fatura:cartao?getPeriodo(cartao,data):null,total_parcelas:1});
+      notify('Lançamento registrado!','ok');
+    }
+  }
+  fechar('mTrans'); await atualizarTudo(); await autoSync();
+});
+
+document.getElementById('fConta').addEventListener('submit',async e=>{
+  e.preventDefault();
+  const id=document.getElementById('eContaId').value;
+  await saveConta({id:id?parseInt(id):Date.now(),nome:document.getElementById('cNome').value,tipo:document.getElementById('cTipo').value,saldoBase:parseFloat(document.getElementById('cSaldo').value)});
+  fechar('mConta'); await atualizarTudo(); await autoSync(); notify('Conta salva!','ok');
+});
+
+document.getElementById('fCartao').addEventListener('submit',async e=>{
+  e.preventDefault();
+  const id=document.getElementById('eCartId').value;
+  await saveCartao({id:id?parseInt(id):Date.now(),nome:document.getElementById('ccNome').value,limite:parseFloat(document.getElementById('ccLimite').value),vencimento:parseInt(document.getElementById('ccVenc').value),fechamento:parseInt(document.getElementById('ccFech').value)});
+  fechar('mCartao'); await atualizarTudo(); await autoSync(); notify('Cartão salvo!','ok');
+});
+
+document.getElementById('fFatura').addEventListener('submit',async e=>{
+  e.preventDefault();
+  const cartaoId=parseInt(document.getElementById('pfCartId').value);
+  const contaId=parseInt(document.getElementById('pfConta').value);
+  const valor=parseFloat(document.getElementById('pfValor').value);
+  const data=document.getElementById('pfData').value;
+  const periodo=document.getElementById('pfRef').value;
+  const cartao=(await getCartoes()).find(c=>c.id===cartaoId);
+  const conta=(await getContas()).find(c=>c.id===contaId);
+  const id1=Date.now();
+  await saveTrans({id:id1,tipo:'Saída',data,descricao:`Pgto Fatura ${cartao?.nome} (${mesNome(periodo)})`,valor,cat:'Pagamento de Fatura',forma:'conta',conta_id:contaId,cartao_id:null});
+  await saveTrans({id:id1+1,tipo:'Entrada',data,descricao:`Amortização via ${conta?.nome}`,valor,cat:'Pagamento de Fatura',forma:'cartao',conta_id:null,cartao_id:cartaoId,periodo_fatura:periodo});
+  fechar('mFatura'); await atualizarTudo(); await autoSync(); notify('Fatura liquidada!','ok');
+});
+
+document.getElementById('fOrc').addEventListener('submit',async e=>{
+  e.preventDefault();
+  const id=document.getElementById('eOrcId').value;
+  const cat=document.getElementById('orcCat').value;
+  const val=parseFloat(document.getElementById('orcValor').value);
+  if(!id){const exist=await getOrcs();if(exist.find(o=>o.categoria===cat)){notify('Já existe meta para esta categoria','warn');return}}
+  await saveOrc({id:id?parseInt(id):Date.now(),categoria:cat,valor:val});
+  fechar('mOrc'); await renderOrc(); await renderDash(); notify('Meta salva!','ok');
+});
+
+// ════════════════════════════════════════
+// EXPORT / IMPORT
+// ════════════════════════════════════════
+window.exportBackup=async()=>{
+  const d={contas:await getContas(),cartoes:await getCartoes(),transacoes:await getTrans(),orcamentos:await getOrcs(),versao:3,em:new Date().toISOString()};
+  let conteudo, suf='';
+  if(CRYPTO_KEY){conteudo=await packData(d);suf='_cripto'}
+  else{conteudo=JSON.stringify(d,null,2)}
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([conteudo],{type:'application/json'}));
+  a.download=`backup_central_${hoje()}${suf}.json`; a.click();
+  notify(CRYPTO_KEY?'Backup criptografado gerado!':'Backup gerado!','ok');
+};
+window.importBackup=async file=>{
+  if(!file)return;
+  try{
+    const raw=JSON.parse(await file.text());
+    let d;
+    if(raw&&raw._enc){
+      if(!CRYPTO_KEY){notify('Backup criptografado. Desbloqueie com a senha de criptografia primeiro.','err');return}
+      try{d=await unpackData(raw)}catch{notify('Senha de criptografia não corresponde a este backup','err');return}
+    }else{d=raw}
+    if(d.contas)for(const c of d.contas)await saveConta(c);
+    if(d.cartoes)for(const c of d.cartoes)await saveCartao(c);
+    if(d.transacoes)for(const t of d.transacoes)await saveTrans(t);
+    if(d.orcamentos)for(const o of d.orcamentos)await saveOrc(o);
+    await atualizarTudo(); notify('Backup restaurado!','ok');
+  }catch{notify('Erro ao ler arquivo de backup','err')}
+};
+window.exportCSV=async()=>{
+  const[trans,contas,cartoes]=await Promise.all([getTrans(),getContas(),getCartoes()]);
+  const cMap=Object.fromEntries(contas.map(c=>[c.id,c.nome]));
+  const kMap=Object.fromEntries(cartoes.map(c=>[c.id,c.nome]));
+  const hdr='Data,Descrição,Categoria,Tipo,Forma,Origem/Destino,Valor\n';
+  const rows=trans.sort((a,b)=>new Date(b.data)-new Date(a.data)).map(t=>{
+    const orig=t.forma==='conta'?(cMap[t.conta_id]||''):( kMap[t.cartao_id]||'');
+    return`${t.data},"${t.descricao.replace(/"/g,'""')}",${t.cat},${t.tipo},${t.forma},"${orig}",${t.valor.toFixed(2)}`;
+  }).join('\n');
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob(['\uFEFF'+hdr+rows],{type:'text/csv;charset=utf-8'}));
+  a.download=`lancamentos_${hoje()}.csv`; a.click(); notify('CSV exportado!','ok');
+};
+window.limparDados=()=>confirm2('⚠️ Limpar Todos os Dados','Esta ação é IRREVERSÍVEL e apagará tudo. Tem absoluta certeza?',async()=>{
+  if(useLS){['fin_contas','fin_cartoes','fin_trans','fin_orc'].forEach(k=>localStorage.removeItem(k))}
+  else{
+    const[c,k,t,o]=await Promise.all([getContas(),getCartoes(),getTrans(),getOrcs()]);
+    for(const x of c)await delConta(x.id);for(const x of k)await delCartao(x.id);
+    for(const x of t)await delTrans(x.id);for(const x of o)await delOrc(x.id);
+  }
+  await atualizarTudo(); notify('Todos os dados removidos','warn');
+});
+
+// ════════════════════════════════════════
+// TOGGLE EVOLUÇÃO
+// ════════════════════════════════════════
+let evolVis=true;
+function toggleEvol(){evolVis=!evolVis;document.getElementById('evolWrap').style.display=evolVis?'':'none';document.getElementById('btnEvol').innerHTML=`<i class="ph ph-caret-${evolVis?'up':'down'}"></i>`}
+
+// ════════════════════════════════════════
+// ATUALIZAR TUDO
+// ════════════════════════════════════════
+async function atualizarTudo(){
+  await renderFiltroMeses();
+  await renderDash();
+  await carregarTrans();
+  await renderTrans();
+  await renderPatr();
+  await renderCartoes();
+  await renderFaturas();
+  await renderOrc();
+  renderCfg();
+  await atualizarSelects();
+}
+
+// ════════════════════════════════════════
+// NAV
+// ════════════════════════════════════════
+document.querySelectorAll('.nav-item').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    const t=btn.getAttribute('data-t');
+    document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+    document.getElementById(`tab-${t}`)?.classList.add('active');
+    document.getElementById('pgTitle').innerText=btn.innerText.trim().replace(/[0-9!]/g,'').trim()+'.';
+    if(window.innerWidth<=900)document.getElementById('sidebar').classList.remove('open');
+  });
+});
+document.getElementById('filtMes')?.addEventListener('change',renderDash);
+document.getElementById('topDate').innerText=new Date().toLocaleDateString('pt-BR',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
+document.addEventListener('click',e=>{
+  const sb=document.getElementById('sidebar');
+  if(window.innerWidth<=900&&sb.classList.contains('open')&&!sb.contains(e.target)&&!document.getElementById('mbtn').contains(e.target))sb.classList.remove('open');
+});
+
+// ════════════════════════════════════════
+// INIT
+// ════════════════════════════════════════
+(async()=>{
+  const ld=document.createElement('div');
+  ld.className='ld';
+  ld.innerHTML='<i class="ph ph-spinner"></i><span style="font-family:var(--serif);font-size:1rem;letter-spacing:1px">Iniciando Central Financeira...</span>';
+  document.body.appendChild(ld);
+  try{
+    await initDB(); stType='IndexedDB';
+    document.getElementById('stBadge').innerText='IndexedDB';
+    document.getElementById('stDesc').innerText='Motor principal: IndexedDB (alto desempenho local)';
+  }catch{switchLS()}
+
+  // ── GATE DE SEGURANÇA ──
+  const sec=getSec();
+  ld.remove();
+  if(sec&&sec.loginHash){
+    // Proteção configurada → exigir login antes de qualquer dado
+    document.getElementById('lockSetup').style.display='none';
+    document.getElementById('lockLogin').style.display='block';
+    document.getElementById('lockScreen').style.display='flex';
+    setTimeout(()=>document.getElementById('loginPass')?.focus(),100);
+    return; // fluxo continua em desbloquearCrypto()
+  }else{
+    // Primeira vez → oferecer setup de proteção
+    document.getElementById('lockSetup').style.display='block';
+    document.getElementById('lockLogin').style.display='none';
+    document.getElementById('lockScreen').style.display='flex';
+    setTimeout(()=>document.getElementById('setupLogin')?.focus(),100);
+    return; // continua em setupSenhas() ou pularProtecao()
+  }
+})();
+
+// Carregamento dos dados + migrações (chamado após desbloqueio ou skip)
+let _bootDone=false;
+async function bootDados(){
+  if(_bootDone)return; _bootDone=true;
+  // Migração do banco legado (fin_db em localStorage)
+  const oldData=localStorage.getItem('fin_db');
+  if(oldData){
+    try{
+      const p=JSON.parse(oldData);
+      if(p.contas)for(const c of p.contas)await saveConta(c);
+      if(p.cartoes)for(const c of p.cartoes)await saveCartao(c);
+      if(p.transacoes)for(const t of p.transacoes)await saveTrans(t);
+      localStorage.removeItem('fin_db');
+      notify('Dados migrados para o novo motor!','ok');
+    }catch(e){console.warn('Migração legado falhou:',e)}
+  }
+  // Migração da versão anterior (FinancasDB) — apenas se sem proteção
+  if(!useLS&&!CRYPTO_KEY){
+    try{
+      await new Promise(res=>{
+        const r=indexedDB.open('FinancasDB',1);
+        r.onerror=()=>res();
+        r.onsuccess=async()=>{
+          const oldDB=r.result;
+          if(oldDB.objectStoreNames.contains('contas')&&oldDB.objectStoreNames.contains('transacoes')){
+            const getAll=store=>new Promise(r2=>{const req=oldDB.transaction(store,'readonly').objectStore(store).getAll();req.onsuccess=()=>r2(req.result||[])});
+            const[oc,ok,ot]=await Promise.all([getAll('contas'),getAll('cartoes'),getAll('transacoes')]);
+            const cur=await getContas();
+            if(cur.length<=1&&oc.length>0){
+              for(const c of oc)await saveConta(c);
+              for(const c of ok)await saveCartao(c);
+              for(const t of ot)await saveTrans(t);
+              notify('Dados da versão anterior importados!','ok');
+            }
+          }
+          oldDB.close(); res();
+        };
+      });
+    }catch(e){}
+  }
+  const cfg=getSyncCfg();
+  updateSyncUI(cfg.binId&&cfg.apiKey?'ok':'warn');
+}
+
+</script>
+</body>
+</html>
